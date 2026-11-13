@@ -1,0 +1,400 @@
+{
+  "schemaVersion": "0.1-draft",
+  "project": {
+    "id": "poc-tasks",
+    "title": "从想法开始 · 个人任务清单",
+    "goal": "把“随手记任务”整理成可讨论的一条核心流程",
+    "scope": [
+      "新增任务",
+      "查看未完成任务"
+    ],
+    "assumptions": [
+      "演示需求由 AI 选定，不代表用户已经确定的产品",
+      "首轮仅讨论单人使用，保存介质与跨设备能力尚未决定"
+    ]
+  },
+  "revision": "poc-tasks-poc-1",
+  "nodes": [
+    {
+      "id": "sys-tasks",
+      "kind": "system",
+      "title": "个人任务清单",
+      "summary": "先把想法变成一个可回看的任务",
+      "parentId": null,
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "audience": [
+          "个人使用者"
+        ],
+        "inScope": [
+          "新增任务并显示结果"
+        ],
+        "outOfScope": [
+          "协作",
+          "提醒",
+          "账号",
+          "任务完成流程"
+        ],
+        "successCriteria": [
+          "能看清新增任务的成功与失败路径"
+        ]
+      }
+    },
+    {
+      "id": "mod-tasks",
+      "kind": "module",
+      "title": "任务管理",
+      "summary": "接收任务内容，保存并反馈结果",
+      "parentId": "sys-tasks",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "responsibilities": [
+          "新增任务"
+        ],
+        "boundaries": [
+          "本轮只设计新增流程"
+        ],
+        "inputs": [
+          "用户输入的任务标题"
+        ],
+        "outputs": [
+          "新任务或明确失败提示"
+        ]
+      }
+    },
+    {
+      "id": "flow-create",
+      "kind": "flow",
+      "title": "新增一项任务",
+      "summary": "输入 → 检查 → 保存 → 展示结果",
+      "parentId": "mod-tasks",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "trigger": "用户点击添加",
+        "preconditions": [
+          "用户已打开任务清单"
+        ],
+        "startStepId": "step-input",
+        "terminalStepIds": [
+          "step-done",
+          "step-rejected"
+        ]
+      }
+    },
+    {
+      "id": "step-input",
+      "kind": "step",
+      "title": "接收输入",
+      "summary": "保留用户刚输入的标题",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "action": "读取用户输入，进入内容检查"
+      }
+    },
+    {
+      "id": "step-check",
+      "kind": "step",
+      "title": "检查标题",
+      "summary": "空白内容不应成为任务",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "action": "去掉首尾空白并判断标题是否为空",
+        "failureHandling": "空白标题返回可修改的提示，保留输入"
+      }
+    },
+    {
+      "id": "step-save",
+      "kind": "step",
+      "title": "保存任务",
+      "summary": "创建未完成任务并保存",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "action": "按待决定的持久化方式保存任务，初始状态为未完成",
+        "failureHandling": "保存失败时保留输入并提示重试，不展示虚假成功"
+      }
+    },
+    {
+      "id": "step-done",
+      "kind": "step",
+      "title": "显示新增任务",
+      "summary": "在列表中展示保存成功的任务",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "action": "显示新任务，清空输入"
+      }
+    },
+    {
+      "id": "step-rejected",
+      "kind": "step",
+      "title": "提示并保留输入",
+      "summary": "用户可以修正后再次提交",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "action": "提示空白输入或保存失败，本次提交结束"
+      }
+    },
+    {
+      "id": "rule-title",
+      "kind": "rule",
+      "title": "任务必须有标题",
+      "summary": "去掉首尾空白后标题为空时不保存任务",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "when": "执行本流程时",
+        "constraint": "去掉首尾空白后标题为空时不保存任务",
+        "exceptions": [],
+        "rationale": "POC 设计建议"
+      }
+    },
+    {
+      "id": "rule-result",
+      "kind": "rule",
+      "title": "保存成功才显示成功",
+      "summary": "保存失败时保留输入并允许重试；只有保存成功才清空输入",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "when": "执行本流程时",
+        "constraint": "保存失败时保留输入并允许重试；只有保存成功才清空输入",
+        "exceptions": [],
+        "rationale": "POC 设计建议"
+      }
+    },
+    {
+      "id": "acc-empty",
+      "kind": "acceptance",
+      "title": "空白标题被拒绝",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "given": [
+          "标题只有空格"
+        ],
+        "when": "点击添加",
+        "then": [
+          "没有创建任务",
+          "输入仍可编辑"
+        ]
+      }
+    },
+    {
+      "id": "acc-save",
+      "kind": "acceptance",
+      "title": "成功保存后显示任务",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "given": [
+          "有效标题",
+          "保存可用"
+        ],
+        "when": "点击添加",
+        "then": [
+          "列表出现未完成任务",
+          "输入被清空"
+        ]
+      }
+    },
+    {
+      "id": "acc-fail",
+      "kind": "acceptance",
+      "title": "保存失败保留输入",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "given": [
+          "有效标题",
+          "保存不可用"
+        ],
+        "when": "点击添加",
+        "then": [
+          "显示失败提示",
+          "保留用户输入"
+        ]
+      }
+    },
+    {
+      "id": "q-storage",
+      "kind": "question",
+      "title": "任务需要跨设备吗",
+      "summary": "这会影响保存方式和账号需求",
+      "parentId": "flow-create",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "docs/poc/new-system/request.md"
+        ]
+      },
+      "details": {
+        "question": "首轮仅保存在当前设备，还是需要跨设备同步？",
+        "options": [
+          "仅当前设备",
+          "跨设备同步"
+        ],
+        "blocks": [
+          "持久化方案与账号边界"
+        ]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-next-0",
+      "kind": "next",
+      "from": "step-input",
+      "to": "step-check"
+    },
+    {
+      "id": "rel-next-1",
+      "kind": "next",
+      "from": "step-check",
+      "to": "step-save",
+      "condition": "标题非空"
+    },
+    {
+      "id": "rel-next-2",
+      "kind": "next",
+      "from": "step-check",
+      "to": "step-rejected",
+      "condition": "标题为空"
+    },
+    {
+      "id": "rel-next-3",
+      "kind": "next",
+      "from": "step-save",
+      "to": "step-done",
+      "condition": "保存成功"
+    },
+    {
+      "id": "rel-next-4",
+      "kind": "next",
+      "from": "step-save",
+      "to": "step-rejected",
+      "condition": "保存失败"
+    },
+    {
+      "id": "rel-title",
+      "kind": "governed_by",
+      "from": "step-check",
+      "to": "rule-title"
+    },
+    {
+      "id": "rel-save",
+      "kind": "governed_by",
+      "from": "step-save",
+      "to": "rule-result"
+    },
+    {
+      "id": "rel-acc-empty",
+      "kind": "verifies",
+      "from": "acc-empty",
+      "to": "rule-title"
+    },
+    {
+      "id": "rel-acc-save",
+      "kind": "verifies",
+      "from": "acc-save",
+      "to": "rule-result"
+    },
+    {
+      "id": "rel-acc-fail",
+      "kind": "verifies",
+      "from": "acc-fail",
+      "to": "rule-result"
+    },
+    {
+      "id": "rel-storage",
+      "kind": "questions",
+      "from": "q-storage",
+      "to": "step-save"
+    }
+  ]
+}

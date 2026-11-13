@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "0.1-draft",
+  "projectId": "example-login",
+  "designRevision": "example-login-v2-candidate",
+  "description": "仅规划位置；以下文件和符号没有在本项目中创建或核验",
+  "bindings": [
+    {
+      "nodeId": "flow-login",
+      "status": "planned",
+      "plannedPath": "src/auth/login.ts",
+      "plannedSymbol": "login"
+    },
+    {
+      "nodeId": "rule-limit",
+      "status": "planned",
+      "plannedPath": "src/auth/login-limiter.ts",
+      "plannedSymbol": "checkLoginAttempt"
+    },
+    {
+      "nodeId": "acc-limit",
+      "status": "planned",
+      "plannedPath": "tests/auth/login-limiter.test.ts",
+      "plannedSymbol": "blocksAttemptsAfterThreshold"
+    }
+  ],
+  "verificationResults": []
+}

@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-11-12T15:48:22.594392+00:00",
+  "root": "../../..",
+  "kind": "local-file-snapshot",
+  "scope": "validate command only",
+  "files": [
+    {
+      "path": "skills/arkigo/scripts/validate.mjs",
+      "sha256": "4306b773e73083f655e7e4174b5a06e9cea35bc2ecc1aac8149eed15f39825d5"
+    },
+    {
+      "path": "skills/arkigo/schemas/model-0.1-draft.schema.json",
+      "sha256": "7396f33d08f66748ed0f591a0d17716e5b38e9d69847f99e8646c75101feb7f0"
+    },
+    {
+      "path": "skills/arkigo/tests/validate.test.mjs",
+      "sha256": "d041f6ebe38e42cf5ca557733e1fd616a3c37b448dedde99deb516068ecff7fe"
+    },
+    {
+      "path": "skills/arkigo/package.json",
+      "sha256": "2915e2c72f8488371f75add551dc3071879afac70375acbc4bf6a74059067fa5"
+    }
+  ]
+}

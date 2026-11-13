@@ -1,0 +1,16 @@
+{
+  "name": "arkigo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lightweight local architecture skill: query, validate, diff, render and apply",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "query": "node scripts/query.mjs",
+    "diff": "node scripts/diff.mjs",
+    "render": "node scripts/render.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": { "ajv": "8.20.0" }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "0.1-draft",
+  "projectId": "example-login",
+  "id": "view-main",
+  "description": "坐标相对 parentId 容器；这是候选设计的初始布局，不是渲染结果；未定位对象由未来布局器补全",
+  "rootId": "sys-demo",
+  "positions": {
+    "sys-demo": {
+      "x": 0,
+      "y": 0
+    },
+    "mod-user": {
+      "x": 60,
+      "y": 80
+    },
+    "flow-login": {
+      "x": 40,
+      "y": 70
+    },
+    "step-receive": {
+      "x": 40,
+      "y": 80
+    },
+    "step-limit": {
+      "x": 280,
+      "y": 80
+    },
+    "step-credential": {
+      "x": 520,
+      "y": 80
+    },
+    "step-success": {
+      "x": 760,
+      "y": 80
+    },
+    "step-failure": {
+      "x": 760,
+      "y": 260
+    }
+  },
+  "preferences": {
+    "density": "auto",
+    "showRelationKinds": [
+      "next",
+      "governed_by"
+    ],
+    "showQuestions": true
+  },
+  "designRevision": "example-login-v2-candidate"
+}

@@ -1,0 +1,519 @@
+{
+  "schemaVersion": "0.1-draft",
+  "project": {
+    "id": "poc-arkigo",
+    "title": "从已有系统开始 · ArkiGo 校验器",
+    "goal": "沿实际代码理解一次模型校验如何完成",
+    "scope": [
+      "validate 命令的文件读取、结构检查、流程检查与诊断输出"
+    ],
+    "assumptions": [
+      "基于当前本地源码观察；不是整个 ArkiGo 的完整架构",
+      "不包含本轮新增的画布与 Skill；不包含未实现的 diff/context",
+      "图是控制流程的概括，不是自动生成的函数调用图"
+    ]
+  },
+  "revision": "poc-arkigo-poc-1",
+  "nodes": [
+    {
+      "id": "sys-arkigo",
+      "kind": "system",
+      "title": "ArkiGo 模型校验",
+      "summary": "把模型文件转换为结构化诊断",
+      "parentId": null,
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs"
+        ]
+      },
+      "details": {
+        "audience": [
+          "设计模型的维护者",
+          "调用校验的 AI"
+        ],
+        "inScope": [
+          "validate 命令"
+        ],
+        "outOfScope": [
+          "画布渲染",
+          "自动修改设计",
+          "业务语义完整性",
+          "diff/context"
+        ],
+        "successCriteria": [
+          "读者能解释校验失败和提示的区别"
+        ],
+        "inspection": "代码定位以项目根目录为基准；本次文件指纹见 sources.json"
+      }
+    },
+    {
+      "id": "mod-cli",
+      "kind": "module",
+      "title": "本地校验命令",
+      "summary": "处理命令参数、只读输入和诊断输出",
+      "parentId": "sys-arkigo",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main",
+          "skills/arkigo/scripts/validate.mjs#validateFile"
+        ]
+      },
+      "details": {
+        "responsibilities": [
+          "读取模型并返回诊断"
+        ],
+        "boundaries": [
+          "不修改模型文件"
+        ],
+        "inputs": [
+          "模型路径",
+          "可选 --json"
+        ],
+        "outputs": [
+          "诊断",
+          "退出码"
+        ]
+      }
+    },
+    {
+      "id": "flow-validate",
+      "kind": "flow",
+      "title": "校验一次模型",
+      "summary": "读取 → 字段 → 图结构 → 流程与提示 → 输出",
+      "parentId": "mod-cli",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "trigger": "执行 validate 命令",
+        "preconditions": [
+          "Node 与 Ajv 可用",
+          "校验器及 Schema 可正常加载",
+          "本图不展开 --help 路径"
+        ],
+        "startStepId": "step-args",
+        "terminalStepIds": [
+          "step-usage",
+          "step-exit"
+        ]
+      }
+    },
+    {
+      "id": "step-args",
+      "kind": "step",
+      "title": "检查命令参数",
+      "summary": "一个文件路径，可选 --json",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "action": "检查文件参数、未知选项与重复 --json",
+        "failureHandling": "参数不正确时输出用法，退出码 2"
+      }
+    },
+    {
+      "id": "step-read",
+      "kind": "step",
+      "title": "读取并解析文件",
+      "summary": "处理读取错误、UTF-8 BOM 和 JSON",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateFile"
+        ]
+      },
+      "details": {
+        "action": "读取文件，移除开头 BOM，再解析 JSON",
+        "failureHandling": "读取或解析失败生成文件级诊断"
+      }
+    },
+    {
+      "id": "step-schema",
+      "kind": "step",
+      "title": "检查字段结构",
+      "summary": "用 Ajv 校验版本、类型和必填字段",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateModel"
+        ]
+      },
+      "details": {
+        "action": "校验 model-0.1-draft.schema.json，失败则返回 Schema 诊断",
+        "failureHandling": "Schema 不通过时不继续图检查"
+      }
+    },
+    {
+      "id": "step-structure",
+      "kind": "step",
+      "title": "检查对象与引用",
+      "summary": "ID、归属与关系端点",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateModel"
+        ]
+      },
+      "details": {
+        "action": "检查重复 ID、唯一系统根、归属引用、循环与关系端点；重复 ID 或不可靠归属使后续检查停止",
+        "failureHandling": "记录诊断；仅关系端点错误时跳过无效关系并继续流程检查"
+      }
+    },
+    {
+      "id": "step-flow",
+      "kind": "step",
+      "title": "检查流程并收集提示",
+      "summary": "可达性、终点、分支及未决问题",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateModel"
+        ]
+      },
+      "details": {
+        "action": "检查步骤所属流程、起终点、可达、终点路径、分支条件和异常处理；收集两类覆盖提示"
+      }
+    },
+    {
+      "id": "step-report",
+      "kind": "step",
+      "title": "格式化诊断",
+      "summary": "输出文本或 JSON",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "action": "根据 --json 输出报告；valid 仅由 errors 是否为空决定"
+      }
+    },
+    {
+      "id": "step-usage",
+      "kind": "step",
+      "title": "返回参数错误",
+      "summary": "用法说明 + 退出码 2",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "action": "向标准错误输出用法，返回退出码 2"
+      }
+    },
+    {
+      "id": "step-exit",
+      "kind": "step",
+      "title": "返回校验结果",
+      "summary": "退出码 0、1 或 2",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "action": "文件/解析错误返回 2；模型无效返回 1；模型有效返回 0，warnings 不改变退出码"
+      }
+    },
+    {
+      "id": "rule-warning",
+      "kind": "rule",
+      "title": "提示不阻止草案",
+      "summary": "warnings 不改变 valid；仅有未决问题或验收缺口时退出码仍为 0",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#result",
+          "skills/arkigo/scripts/validate.mjs#main"
+        ]
+      },
+      "details": {
+        "when": "执行本流程时",
+        "constraint": "warnings 不改变 valid；仅有未决问题或验收缺口时退出码仍为 0",
+        "exceptions": [],
+        "rationale": "依据当前实现提取，建模待审阅"
+      }
+    },
+    {
+      "id": "rule-early",
+      "kind": "rule",
+      "title": "先修复不可靠结构",
+      "summary": "Schema 失败、重复 ID 或归属错误时，不执行依赖这些结构的后续图检查",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateModel"
+        ]
+      },
+      "details": {
+        "when": "执行本流程时",
+        "constraint": "Schema 失败、重复 ID 或归属错误时，不执行依赖这些结构的后续图检查",
+        "exceptions": [],
+        "rationale": "依据当前实现提取，建模待审阅"
+      }
+    },
+    {
+      "id": "rule-readonly",
+      "kind": "rule",
+      "title": "校验不写回模型",
+      "summary": "validateFile 使用 readFileSync 读取输入，校验和命令行路径不写入模型",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateFile"
+        ]
+      },
+      "details": {
+        "when": "执行本流程时",
+        "constraint": "validateFile 使用 readFileSync 读取输入，校验和命令行路径不写入模型",
+        "exceptions": [],
+        "rationale": "依据当前实现提取，建模待审阅"
+      }
+    },
+    {
+      "id": "acc-warnings",
+      "kind": "acceptance",
+      "title": "未决问题仍可通过",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/tests/validate.test.mjs"
+        ]
+      },
+      "details": {
+        "given": [
+          "有效的登录候选模型",
+          "两个未决问题"
+        ],
+        "when": "运行 validate",
+        "then": [
+          "valid 为 true",
+          "保留两个 QUESTION_UNRESOLVED 提示"
+        ]
+      }
+    },
+    {
+      "id": "acc-duplicate",
+      "kind": "acceptance",
+      "title": "重复 ID 被定位",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/tests/validate.test.mjs"
+        ]
+      },
+      "details": {
+        "given": [
+          "duplicate-id 失败模型"
+        ],
+        "when": "运行 validate",
+        "then": [
+          "DUPLICATE_ID 指向对象 ID 与字段位置"
+        ]
+      }
+    },
+    {
+      "id": "acc-readonly",
+      "kind": "acceptance",
+      "title": "输入保持原样",
+      "summary": "预期行为；本对象不代表验收已执行",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "code",
+        "references": [
+          "skills/arkigo/tests/validate.test.mjs"
+        ]
+      },
+      "details": {
+        "given": [
+          "带 UTF-8 BOM 的模型文件"
+        ],
+        "when": "运行 validate --json",
+        "then": [
+          "输入内容不变",
+          "没有新增模型旁文件"
+        ]
+      }
+    },
+    {
+      "id": "q-failure",
+      "kind": "question",
+      "title": "单出口步骤的异常如何表达",
+      "summary": "当前代码只强制检查多出口步骤的异常记录",
+      "parentId": "flow-validate",
+      "designStatus": "proposed",
+      "provenance": {
+        "origin": "ai",
+        "references": [
+          "skills/arkigo/scripts/validate.mjs#validateModel"
+        ]
+      },
+      "details": {
+        "question": "是否需要单独约定单出口步骤的异常说明，或明确哪些步骤无需展开？",
+        "options": [
+          "保持当前检查，人工补充",
+          "以后增加显式异常约定"
+        ],
+        "blocks": [
+          "后续异常检查范围"
+        ]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-next-0",
+      "kind": "next",
+      "from": "step-args",
+      "to": "step-read",
+      "condition": "参数有效"
+    },
+    {
+      "id": "rel-next-1",
+      "kind": "next",
+      "from": "step-args",
+      "to": "step-usage",
+      "condition": "参数无效"
+    },
+    {
+      "id": "rel-next-2",
+      "kind": "next",
+      "from": "step-read",
+      "to": "step-schema",
+      "condition": "读取和解析成功"
+    },
+    {
+      "id": "rel-next-3",
+      "kind": "next",
+      "from": "step-read",
+      "to": "step-report",
+      "condition": "文件读取或 JSON 解析失败"
+    },
+    {
+      "id": "rel-next-4",
+      "kind": "next",
+      "from": "step-schema",
+      "to": "step-structure",
+      "condition": "Schema 通过"
+    },
+    {
+      "id": "rel-next-5",
+      "kind": "next",
+      "from": "step-schema",
+      "to": "step-report",
+      "condition": "Schema 失败"
+    },
+    {
+      "id": "rel-next-6",
+      "kind": "next",
+      "from": "step-structure",
+      "to": "step-flow",
+      "condition": "ID 唯一且归属可靠；关系端点错误可保留"
+    },
+    {
+      "id": "rel-next-7",
+      "kind": "next",
+      "from": "step-structure",
+      "to": "step-report",
+      "condition": "重复 ID 或归属结构不可靠"
+    },
+    {
+      "id": "rel-next-8",
+      "kind": "next",
+      "from": "step-flow",
+      "to": "step-report"
+    },
+    {
+      "id": "rel-next-9",
+      "kind": "next",
+      "from": "step-report",
+      "to": "step-exit"
+    },
+    {
+      "id": "rel-rule-warn",
+      "kind": "governed_by",
+      "from": "step-report",
+      "to": "rule-warning"
+    },
+    {
+      "id": "rel-rule-early",
+      "kind": "governed_by",
+      "from": "step-structure",
+      "to": "rule-early"
+    },
+    {
+      "id": "rel-rule-readonly",
+      "kind": "governed_by",
+      "from": "step-read",
+      "to": "rule-readonly"
+    },
+    {
+      "id": "rel-acc-warnings",
+      "kind": "verifies",
+      "from": "acc-warnings",
+      "to": "rule-warning"
+    },
+    {
+      "id": "rel-acc-duplicate",
+      "kind": "verifies",
+      "from": "acc-duplicate",
+      "to": "rule-early"
+    },
+    {
+      "id": "rel-acc-readonly",
+      "kind": "verifies",
+      "from": "acc-readonly",
+      "to": "rule-readonly"
+    },
+    {
+      "id": "rel-question",
+      "kind": "questions",
+      "from": "q-failure",
+      "to": "step-flow"
+    }
+  ]
+}

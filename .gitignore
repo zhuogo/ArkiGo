@@ -1,0 +1,11 @@
+# Installed dependencies and local verification output.
+node_modules/
+.artifacts/
+
+# Third-party reference snapshot; provenance is kept in resource/README.md.
+/resource/archify/
+
+# Python browser-test bytecode.
+__pycache__/
+*.pyc
+*.pyo

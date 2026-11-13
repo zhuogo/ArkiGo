@@ -1,0 +1,442 @@
+{
+  "schemaVersion": "arkigo-canvas/1",
+  "id": "task-system-v1",
+  "revision": "tasks-v1-20261113",
+  "title": "个人任务清单 · 系统设计",
+  "description": "用于验证引擎通用性的 AI 演示设计，不是用户已经确认的业务需求。无账号、协作与提醒；跨设备同步尚未决定。",
+  "views": [
+    {
+      "id": "overview",
+      "title": "总架构",
+      "subtitle": "先把一件事记下来，再看清它如何被保存、呈现与恢复。",
+      "zones": [
+        {
+          "id": "entry",
+          "title": "01 / 使用入口",
+          "x": 36,
+          "y": 112,
+          "width": 340,
+          "height": 532
+        },
+        {
+          "id": "service",
+          "title": "02 / 任务能力",
+          "x": 416,
+          "y": 112,
+          "width": 340,
+          "height": 532
+        },
+        {
+          "id": "storage",
+          "title": "03 / 保存与反馈",
+          "x": 796,
+          "y": 112,
+          "width": 340,
+          "height": 532
+        }
+      ],
+      "nodes": [
+        {
+          "id": "capture",
+          "title": "任务输入",
+          "summary": "随手记录标题，失败时保留还没保存的内容。",
+          "kind": "界面",
+          "x": 76,
+          "y": 168,
+          "zoneId": "entry",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "职责": "接收输入并显示检查结果。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "list",
+          "title": "任务列表",
+          "summary": "展示已保存的未完成任务。",
+          "kind": "界面",
+          "x": 76,
+          "y": 414,
+          "zoneId": "entry",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "边界": "完成、排序与筛选操作在本轮之外。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "check",
+          "title": "标题检查",
+          "summary": "去掉首尾空白后，标题必须非空。",
+          "kind": "业务规则",
+          "x": 456,
+          "y": 168,
+          "zoneId": "service",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "规则": "空白标题不进入保存；提示并保留输入。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "create",
+          "title": "任务创建",
+          "summary": "创建初始状态为未完成的任务。",
+          "kind": "业务能力",
+          "x": 456,
+          "y": 414,
+          "zoneId": "service",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "职责": "协调输入检查、保存与结果展示。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ],
+          "targetViewId": "create"
+        },
+        {
+          "id": "store",
+          "title": "持久化接口",
+          "summary": "保存成功才更新列表；失败允许重试。",
+          "kind": "存储边界",
+          "x": 836,
+          "y": 168,
+          "zoneId": "storage",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "约束": "不能在保存失败时显示成功。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "sync-question",
+          "title": "是否跨设备同步",
+          "summary": "这个决定会影响账号和存储方案。",
+          "kind": "问题",
+          "x": 836,
+          "y": 414,
+          "zoneId": "storage",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "待决定": "首轮仅当前设备，还是支持跨设备？",
+            "选项": [
+              "仅当前设备",
+              "跨设备同步"
+            ]
+          },
+          "sources": [
+            "尚无用户决定"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "capture-check",
+          "from": "capture",
+          "to": "check",
+          "label": "提交标题",
+          "kind": "call"
+        },
+        {
+          "id": "check-create",
+          "from": "check",
+          "to": "create",
+          "label": "有效标题",
+          "kind": "call",
+          "fromSide": "bottom",
+          "toSide": "top"
+        },
+        {
+          "id": "create-store",
+          "from": "create",
+          "to": "store",
+          "label": "写入任务",
+          "kind": "call",
+          "fromSide": "right",
+          "toSide": "left"
+        },
+        {
+          "id": "store-list",
+          "from": "store",
+          "to": "list",
+          "label": "保存成功后刷新",
+          "kind": "feedback",
+          "fromSide": "bottom",
+          "toSide": "right"
+        },
+        {
+          "id": "question-store",
+          "from": "sync-question",
+          "to": "store",
+          "label": "影响保存方案",
+          "kind": "questions",
+          "fromSide": "top",
+          "toSide": "bottom"
+        }
+      ],
+      "walkthrough": [
+        {
+          "nodeId": "capture",
+          "title": "接收用户想法",
+          "text": "输入框先保留用户原始输入，直到成功保存。"
+        },
+        {
+          "nodeId": "check",
+          "title": "检查任务内容",
+          "text": "空白内容返回提示，不创建任务。",
+          "edgeId": "capture-check"
+        },
+        {
+          "nodeId": "create",
+          "title": "创建本次任务",
+          "text": "标题有效才进入创建流程。",
+          "edgeId": "check-create"
+        },
+        {
+          "nodeId": "store",
+          "title": "等待保存结果",
+          "text": "只有成功保存才更新列表并清空输入。",
+          "edgeId": "create-store"
+        },
+        {
+          "nodeId": "sync-question",
+          "title": "保留未决问题",
+          "text": "先说明跨设备需求未知，避免擅自引入账号与云服务。",
+          "edgeId": "question-store"
+        }
+      ]
+    },
+    {
+      "id": "create",
+      "title": "新增任务流程",
+      "subtitle": "主路径与两个失败出口都保持明确；所有内容是待审阅的演示建议。",
+      "zones": [
+        {
+          "id": "zone-main",
+          "title": "主流程 / 从输入到成功",
+          "x": 36,
+          "y": 112,
+          "width": 1380,
+          "height": 280
+        },
+        {
+          "id": "zone-failure",
+          "title": "异常分支 / 保留输入与反馈",
+          "x": 376,
+          "y": 440,
+          "width": 1040,
+          "height": 280
+        }
+      ],
+      "nodes": [
+        {
+          "id": "input",
+          "title": "接收任务标题",
+          "summary": "读取本次输入。",
+          "kind": "起点",
+          "x": 76,
+          "y": 168,
+          "zoneId": "zone-main",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "动作": "读取标题，保留用户输入。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "check",
+          "title": "检查非空标题",
+          "summary": "空白标题不保存。",
+          "kind": "分支",
+          "x": 416,
+          "y": 168,
+          "zoneId": "zone-main",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "条件": [
+              "非空 → 保存",
+              "空白 → 提示失败"
+            ]
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "save",
+          "title": "保存未完成任务",
+          "summary": "保存介质待定，不影响成功与失败的契约。",
+          "kind": "动作",
+          "x": 756,
+          "y": 168,
+          "zoneId": "zone-main",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "约束": "必须等待实际保存结果。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "retry",
+          "title": "保留输入待重试",
+          "summary": "失败不会清除用户刚刚输入的内容。",
+          "kind": "恢复",
+          "x": 586,
+          "y": 496,
+          "zoneId": "zone-failure",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "行为": "用户修正或重试会开始一次新的提交流程。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "done",
+          "title": "显示新增任务",
+          "summary": "更新列表，清空输入。",
+          "kind": "成功终点",
+          "x": 1096,
+          "y": 168,
+          "zoneId": "zone-main",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "前提": "保存成功。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        },
+        {
+          "id": "failed",
+          "title": "提示本次失败",
+          "summary": "解释输入无效或保存失败。",
+          "kind": "失败终点",
+          "x": 1096,
+          "y": 496,
+          "zoneId": "zone-failure",
+          "designStatus": "proposed",
+          "sourceOrigin": "ai",
+          "details": {
+            "约束": "不展示虚假的成功状态。"
+          },
+          "sources": [
+            "AI 演示建议"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "input-check",
+          "from": "input",
+          "to": "check",
+          "label": "读取输入",
+          "kind": "call",
+          "fromSide": "right",
+          "toSide": "left"
+        },
+        {
+          "id": "check-save",
+          "from": "check",
+          "to": "save",
+          "label": "标题有效",
+          "kind": "call",
+          "fromSide": "right",
+          "toSide": "left"
+        },
+        {
+          "id": "check-retry",
+          "from": "check",
+          "to": "retry",
+          "label": "标题为空",
+          "kind": "call"
+        },
+        {
+          "id": "save-done",
+          "from": "save",
+          "to": "done",
+          "label": "保存成功",
+          "kind": "call"
+        },
+        {
+          "id": "save-retry",
+          "from": "save",
+          "to": "retry",
+          "label": "保存失败",
+          "kind": "feedback",
+          "fromSide": "bottom",
+          "toSide": "top"
+        },
+        {
+          "id": "retry-failed",
+          "from": "retry",
+          "to": "failed",
+          "label": "保留输入并提示",
+          "kind": "call"
+        }
+      ],
+      "walkthrough": [
+        {
+          "nodeId": "input",
+          "title": "接收输入",
+          "text": "保留本次标题，进入检查。"
+        },
+        {
+          "nodeId": "check",
+          "title": "检查输入",
+          "text": "空白输入不能创建任务。",
+          "edgeId": "input-check"
+        },
+        {
+          "nodeId": "save",
+          "title": "执行保存",
+          "text": "存储方案尚未决定，但保存结果必须明确。",
+          "edgeId": "check-save"
+        },
+        {
+          "nodeId": "done",
+          "title": "成功反馈",
+          "text": "保存成功后才显示任务并清空输入。",
+          "edgeId": "save-done"
+        },
+        {
+          "nodeId": "retry",
+          "title": "再看失败路径",
+          "text": "如果标题无效或保存失败，保留输入。",
+          "edgeId": "save-retry"
+        },
+        {
+          "nodeId": "failed",
+          "title": "让用户继续修正",
+          "text": "本次提交结束，后续重试是一次新的提交。",
+          "edgeId": "retry-failed"
+        }
+      ]
+    }
+  ]
+}
