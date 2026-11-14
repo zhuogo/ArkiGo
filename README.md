@@ -51,7 +51,9 @@ GitHub 搜索 API 的公开仓库查询结果（`incomplete_results: false`）�
 
 ## 当前状态
 
-项目与 Skill 统一命名为 `arkigo`。已形成可独立安装的 Skill 1.0：新系统设计、已有系统理解和设计迭代，共用有界查询、校验、程序差异、候选应用与离线画布。使用方法见[Skill 与本地工具](./skills/arkigo/README.md)。新项目默认输出 `docs/canvas.json` 与 `docs/canvas.html`。
+项目与 Skill 统一命名为 `arkigo`。已形成可独立安装的 Skill 1.1：新系统设计、已有系统理解和设计迭代，共用有界查询、校验、程序差异、候选应用与离线画布。使用方法见[Skill 与本地工具](./skills/arkigo/README.md)。新项目默认输出 `docs/canvas.json` 与 `docs/canvas.html`。
+
+1.1 增加独立的实现情况：待实现、部分实现、已实现、未核对，以不同形状的彩色图标呈现；缺省为未核对，不从设计接受、来源或子节点推断完成度。先体验[实现情况画布](./docs/poc/canvas-engine/implementation.html)，查看核对范围、缺口和来源。实现记录不等于测试通过或上线。
 
 先打开 **[用户注册四级画布](./docs/poc/canvas-engine/registration.html)**：系统全景 → 用户模块 → 用户注册 → 创建用户记录。选中模块后点击进入、双击或放大深入；缩小、祖先面包屑或 `Alt+Left` 返回，恢复父级相机与选中。另有 [ArkiGo 引擎架构](./docs/poc/canvas-engine/index.html) 和 [任务清单画布](./docs/poc/canvas-engine/tasks.html)，三份通用 JSON 共用离线运行时，支持详情、搜索、主题切换、拖动及布局保存/导出。
 

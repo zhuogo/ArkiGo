@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { IMPLEMENTATION_STATES, implementationStatus } from '../assets/canvas-implementation.mjs';
 
 export const DEFAULT_MAX_BYTES = 12000;
 export const MAX_BYTES = 65536;
@@ -61,6 +62,12 @@ function commonNode(node, path, canvas) {
   requireText(node.summary, `${path}/summary`, canvas);
   requireText(node.kind, `${path}/kind`);
   requireObject(node.details, `${path}/details`);
+  if (own(node, 'implementation')) {
+    requireObject(node.implementation, `${path}/implementation`);
+    if (typeof node.implementation.status !== 'string' || !own(IMPLEMENTATION_STATES, node.implementation.status)) fail('SHAPE_INVALID', 'Unknown implementation status.', `${path}/implementation/status`);
+    if (own(node.implementation, 'note')) requireText(node.implementation.note, `${path}/implementation/note`);
+    if (own(node.implementation, 'sources')) strings(node.implementation.sources, `${path}/implementation/sources`);
+  }
   if (canvas) strings(node.sources, `${path}/sources`);
   else {
     if (!['system', 'module', 'flow', 'step', 'rule', 'acceptance', 'question'].includes(node.kind)) {
@@ -208,7 +215,7 @@ function integer(value, flag, min, max) {
 export function parseArgs(args) {
   if (args.length === 1 && ['--help', '-h'].includes(args[0])) return { help: true };
   const options = {};
-  const flags = new Map([['--search', 'search'], ['--view', 'view'], ['--id', 'id'], ['--field', 'field'], ['--offset', 'offset'], ['--limit', 'limit'], ['--max-bytes', 'maxBytes']]);
+  const flags = new Map([['--search', 'search'], ['--view', 'view'], ['--id', 'id'], ['--field', 'field'], ['--implementation', 'implementation'], ['--offset', 'offset'], ['--limit', 'limit'], ['--max-bytes', 'maxBytes']]);
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg.startsWith('-')) {
@@ -234,6 +241,10 @@ function normalizeOptions(options) {
     fail('ARGUMENT_INVALID', '--field must be an absolute RFC 6901 JSON pointer (empty means the document).');
   }
   if (own(out, 'search') && (own(out, 'id') || own(out, 'field'))) fail('ARGUMENT_INVALID', '--search may combine with --view, but not --id or --field.');
+  if (own(out, 'implementation')) {
+    if (typeof out.implementation !== 'string' || !own(IMPLEMENTATION_STATES, out.implementation)) fail('ARGUMENT_INVALID', '--implementation must be planned, partial, implemented, or unknown.');
+    if (own(out, 'id') || own(out, 'field')) fail('ARGUMENT_INVALID', '--implementation may combine with --view/--search, but not --id/--field.');
+  }
   return out;
 }
 
@@ -360,15 +371,17 @@ function summary(entry, role = 'node') {
   const value = { id: n.id, title: n.title, kind: n.kind, summary: n.summary };
   if (entry.view) value.viewId = entry.view.value.id;
   for (const key of ['parentId', 'targetViewId', 'designStatus']) if (own(n, key)) value[key] = n[key];
+  value.implementation = { status: implementationStatus(n) };
   value.sources = n.sources ?? n.provenance?.references ?? [];
   return { role, locator: entry.locator, projection: 'summary', value };
 }
 function semantic(entry) {
   const value = {};
-  for (const key of ['id', 'kind', 'title', 'summary', 'parentId', 'targetViewId', 'designStatus', 'sourceOrigin', 'provenance', 'sources', 'details']) {
+  for (const key of ['id', 'kind', 'title', 'summary', 'parentId', 'targetViewId', 'designStatus', 'sourceOrigin', 'provenance', 'sources', 'details', 'implementation']) {
     if (own(entry.value, key)) value[key] = entry.value[key];
   }
   if (entry.view) value.viewId = entry.view.value.id;
+  if (!own(value, 'implementation')) value.implementation = { status: 'unknown' };
   return { role: 'target', locator: entry.locator, projection: 'semantic', value };
 }
 export function selectPointer(document, pointer) {
@@ -422,11 +435,13 @@ export function queryDocument(document, options = {}) {
       : (index.children.get(selectedNode.value.id) ?? []);
     // Avoid spreading potentially unbounded child arrays into a function call.
     for (const entry of immediate) items.push(summary(entry, 'child'));
-  } else if (own(opts, 'search')) {
-    mode = 'search';
-    const needle = opts.search.toLocaleLowerCase();
-    const matches = (value) => [value.id, value.title, value.summary, value.kind].some((text) => text.toLocaleLowerCase().includes(needle))
-      || (value.sources ?? value.provenance?.references ?? []).some((text) => text.toLocaleLowerCase().includes(needle));
+  } else if (own(opts, 'search') || own(opts, 'implementation')) {
+    mode = own(opts, 'search') ? 'search' : 'implementation';
+    const needle = (opts.search ?? '').toLocaleLowerCase();
+    const matches = (value) => (!own(opts, 'implementation') || implementationStatus(value) === opts.implementation) &&
+      ([value.id, value.title, value.summary, value.kind].some((text) => text.toLocaleLowerCase().includes(needle))
+      || (value.sources ?? value.provenance?.references ?? []).some((text) => text.toLocaleLowerCase().includes(needle))
+      || (value.implementation?.sources ?? []).some((text) => text.toLocaleLowerCase().includes(needle)));
     items = (selectedView?.nodes ?? index.nodes).filter(({ value }) => matches(value)).map((entry) => summary(entry));
   } else if (selectedView) {
     mode = 'view';
@@ -462,7 +477,7 @@ export function main(args, io = { stdout: process.stdout, stderr: process.stderr
   try {
     opts = parseArgs(args);
     if (opts.help) {
-      io.stdout.write('Usage: node query.mjs <input.json> [--search text] [--view id] [--id nodeId] [--field JSON-pointer] [--offset n] [--limit n] [--max-bytes n]\nSearch combines with view; id combines with view; field is an absolute input JSON pointer and may narrow id/view. Output cap includes the final LF: default 12000, range 1024..65536 bytes. Limit: default 20, range 1..100. Checks cover identity, references, and hierarchy only.\n');
+      io.stdout.write('Usage: node query.mjs <input.json> [--search text] [--view id] [--id nodeId] [--field JSON-pointer] [--implementation planned|partial|implemented|unknown] [--offset n] [--limit n] [--max-bytes n]\nSearch and implementation filters combine with view. Missing implementation is unknown, never inferred from code paths or children. Id combines with view; field is an absolute input JSON pointer and may narrow id/view. Output cap includes the final LF: default 12000, range 1024..65536 bytes. Limit: default 20, range 1..100. Checks cover identity, references, and hierarchy only.\n');
       return 0;
     }
     io.stdout.write(serializeQuery(queryFile(opts.input, opts)));

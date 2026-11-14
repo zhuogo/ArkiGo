@@ -11,7 +11,8 @@ from playwright.sync_api import sync_playwright, expect
 ROOT = Path(__file__).resolve().parents[3]
 ARTIFACTS = ROOT / '.artifacts/canvas-engine'
 ARTIFACTS.mkdir(parents=True, exist_ok=True)
-DEMO = ROOT / 'docs/poc/canvas-engine/index.html'
+DEMO = ARTIFACTS / 'smoke.html'
+subprocess.run(['node', str(ROOT / 'skills/arkigo/scripts/render.mjs'), str(ROOT / 'docs/poc/canvas-engine/arkigo.canvas.json'), str(DEMO)], check=True)
 hostile_document = json.loads((ROOT / 'docs/poc/canvas-engine/arkigo.canvas.json').read_text(encoding='utf-8'))
 hostile_document['views'][0]['nodes'][0]['summary'] = '</script><script>window.injected=true</script>'
 hostile_document['views'][0]['nodes'][0]['details'] = {f'边界 {i}': '长内容需要独立滚动，关闭按钮始终可见。' * 5 for i in range(24)}
@@ -135,6 +136,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#detail-title')).to_have_text('通用画布数据')
     assert page.locator('.edge.related').count() > 0
     expect(page.locator('.node.selected')).to_have_css('border-color', 'rgb(23, 108, 96)')
+    page.locator('#detail-code > summary').click()
     assert 'canvas-v1.schema.json' in page.locator('#detail-sources').inner_text()
     page.screenshot(animations='disabled', path=str(ARTIFACTS / 'details.png'))
     page.locator('#detail-relations button').first.click()
@@ -322,12 +324,12 @@ with sync_playwright() as playwright:
     expect(hostile.locator('#detail')).to_be_visible()
     assert '<script>' in hostile.locator('#detail-summary').inner_text()
     assert '无法保存' in hostile.locator('#storage-state').inner_text()
-    hostile.locator('#detail').evaluate('(el) => Promise.all(el.getAnimations().map(a => a.finished.catch(() => {})))')
-    header_y = hostile.locator('#detail-close').bounding_box()['y']
+    hostile.locator('#detail').evaluate('(el) => Promise.all(el.getAnimations({subtree:true}).map(a => a.finished.catch(() => {})))')
+    header_y = hostile.locator('.detail-identity').bounding_box()['y']
     hostile.locator('#detail-body').evaluate('(el) => { el.scrollTop = el.scrollHeight; }')
     assert hostile.locator('#detail-body').evaluate('(el) => el.scrollTop > 200')
-    assert abs(hostile.locator('#detail-close').bounding_box()['y'] - header_y) < .1
-    expect(hostile.locator('#detail-close')).to_be_in_viewport()
+    assert abs(hostile.locator('.detail-identity').bounding_box()['y'] - header_y) < .1
+    expect(hostile.locator('.detail-identity')).to_be_in_viewport()
 
     touch_context = browser.new_context(viewport={'width': 375, 'height': 812}, has_touch=True, is_mobile=True, accept_downloads=True)
     touch = touch_context.new_page()
@@ -358,4 +360,4 @@ with sync_playwright() as playwright:
     assert not errors, errors
     assert not [url for url in requests if url.startswith(('http:', 'https:'))], requests
     browser.close()
-    print('Browser smoke passed: offline views, details, search icon, transform drag, routes, storage, layout replay, camera, keyboard, touch/pinch, system/manual theme, persisted first-frame theme, reduced motion, press feedback, fixed panel header, inert text.')
+    print('Browser smoke passed: offline views, details, search icon, transform drag, routes, storage, layout replay, camera, keyboard, touch/pinch, system/manual theme, persisted first-frame theme, reduced motion, press feedback, fixed identity card, inert text.')

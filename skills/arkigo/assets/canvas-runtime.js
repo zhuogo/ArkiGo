@@ -5,11 +5,31 @@
   const moduleMark=()=>{const el=make('span','module-mark');el.setAttribute('aria-hidden','true');return el;};
   const button=(text,action,className='btn')=>{const b=make('button',className,text);b.type='button';b.addEventListener('click',action);return b;};
   const svg=(tag)=>document.createElementNS('http://www.w3.org/2000/svg',tag);
+  const detailCategory=(name)=>/规则|约束|constraint|preconditions/.test(name)?'rules':/边界|例外|异常|失败|未深入|boundaries|exceptions|failureHandling/.test(name)?'boundary':/流程|步骤|加载|注入|steps/.test(name)?'flow':/状态|模式|档位/.test(name)?'state':/职责|它做什么|入口|responsibilities|action/.test(name)?'purpose':'context';
+  const detailIcon=(kind)=>{
+    const paths={purpose:'M5 5h14v14H5z M9 5v14 M12 9h4 M12 13h4',flow:'M5 4v11a4 4 0 0 0 4 4h10 M15 15l4 4-4 4 M5 4l-3 3 M5 4l3 3',rules:'m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6z M8.5 11.5l2.5 2.5 4.5-5',boundary:'m12 3 10 18H2z M12 9v5 M12 17h.01',state:'M4 7h9 M17 7h3 M4 17h3 M11 17h9 M13 4v6 M7 14v6',related:'m9 15 6-6 M8 12l-2 2a3.5 3.5 0 0 0 5 5l2-2 M11 7l2-2a3.5 3.5 0 0 1 5 5l-2 2',context:'m12 3 9 5-9 5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5'};
+    const mark=make('span','detail-symbol');mark.dataset.tone=kind;mark.setAttribute('aria-hidden','true');
+    const icon=svg('svg');for(const [key,value]of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.6','stroke-linecap':'round','stroke-linejoin':'round'}))icon.setAttribute(key,value);
+    const path=svg('path');path.setAttribute('d',paths[kind]??paths.context);icon.append(path);mark.append(icon);return mark;
+  };
+  // Explicit emphasis only; model text never becomes HTML.
+  const detailText=(element,text)=>{let cursor=0;for(const match of text.matchAll(/\*\*([^*\n]+)\*\*/g)){element.append(document.createTextNode(text.slice(cursor,match.index)),make('strong','',match[1]));cursor=match.index+match[0].length;}element.append(document.createTextNode(text.slice(cursor)));return element;};
+  const implementationIcon=(node)=>{
+    const status=implementationStatus(node),info=IMPLEMENTATION_STATES[status],mark=make('span','implementation-mark');
+    mark.dataset.implementation=status;mark.setAttribute('role','img');mark.setAttribute('aria-label',info.label);mark.title=info.label+' · '+info.description;
+    const icon=svg('svg');for(const [key,value]of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'}))icon.setAttribute(key,value);
+    const shapes=[['circle',{cx:12,cy:12,r:8,...(status==='planned'?{'stroke-dasharray':'3 3'}:{})}]];
+    if(status==='partial')shapes.push(['path',{d:'M12 4a8 8 0 0 0 0 16Z',fill:'currentColor',stroke:'none',opacity:'.35'}]);
+    if(status==='implemented')shapes.push(['path',{d:'m8.5 12 2.4 2.4 4.6-4.8'}]);
+    if(status==='unknown')shapes.push(['path',{d:'M9.7 9.5a2.35 2.35 0 0 1 4.6.7c0 1.6-2.3 1.8-2.3 3.3'}],['circle',{cx:12,cy:16.4,r:.7,fill:'currentColor',stroke:'none'}]);
+    for(const [tag,attributes]of shapes){const shape=svg(tag);for(const [key,value]of Object.entries(attributes))shape.setAttribute(key,String(value));icon.append(shape);}mark.append(icon);return mark;
+  };
   const viewport=$('viewport'),world=$('world'),announce=(text)=>{$('announcement').textContent=text;};
   // Keyboard actions stay immediate; pointer feedback is limited to occasional surfaces.
   const inputMode=(mode)=>{if(document.documentElement.dataset.input!==mode)document.documentElement.dataset.input=mode;};
   document.addEventListener('pointerdown',()=>inputMode('pointer'),true);
-  document.addEventListener('keydown',()=>inputMode('keyboard'),true);
+  document.addEventListener('keydown',()=>{inputMode('keyboard');$('detail').dataset.motion='none';},true);
+  $('detail').addEventListener('animationend',(event)=>{if(event.animationName==='detail-card-enter'&&event.target.id==='detail-evidence-card')$('detail').dataset.motion='none';});
   let feedbackTimer;
   function feedback(message,tone='success',immediate=false){
     clearTimeout(feedbackTimer);$('feedback').dataset.tone=tone;$('feedback').dataset.immediate=String(immediate);
@@ -73,9 +93,10 @@
     }
     function focusNode(id) {
       const n=byId.get(id);if(!n)return;const w=viewport.clientWidth,h=viewport.clientHeight;
-      const available=w<760?w:Math.max(300,w-430);
+      const railWidth=$('detail').getBoundingClientRect().width;
+      const available=w<760?w:Math.max(240,w-railWidth-48);
       const k=clamp(Math.min(1.12,(available-55)/widthOf(n)),.45,1.12);
-      const cx=w<760?w/2:(w-390)/2,cy=w<760?Math.max(110,(h-270)/2):(h-65)/2;
+      const cx=w<760?w/2:available/2,cy=w<760?Math.max(110,(h-270)/2):(h-65)/2;
       camera={k,x:cx-(n.x+widthOf(n)/2)*k,y:cy-(n.y+heightOf(n)/2)*k};applyCamera();
     }
     function paintSelection() {
@@ -85,27 +106,47 @@
       syncModuleActions();
     }
     function closeDetail(restore=true){$('detail').hidden=true;syncModuleActions();if(restore)(elements.get(selected)??viewport).focus({preventScroll:true});}
+    document.addEventListener('pointerdown',(event)=>{if(!$('detail').hidden&&!$('detail').contains(event.target)&&!event.target.closest('.node'))closeDetail(false);},true);
     function closeDirectory(restore=true){$('directory').hidden=true;$('directory-open').setAttribute('aria-expanded','false');syncModuleActions();if(restore)$('directory-open').focus();}
     function showDetails(n) {
-      closeDirectory(false);$('detail').hidden=false;$('detail-body').scrollTop=0;
+      const opening=$('detail').hidden;
+      closeDirectory(false);$('detail').dataset.motion=opening&&document.documentElement.dataset.input==='pointer'&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'enter':'none';$('detail').hidden=false;$('detail-body').scrollTop=0;
       $('detail-tag').textContent=[n.kind,originNames[n.sourceOrigin],statusNames[n.designStatus]].filter(Boolean).join(' · ');
       $('detail-title').textContent=n.title;$('detail-summary').textContent=n.summary;$('detail-actions').replaceChildren();
+      $('detail-symbol').replaceChildren(detailIcon(detailCategory(n.title+' '+n.kind)));
+      $('detail-relation-title').replaceChildren(detailIcon('related'),document.createTextNode('相关关系'));
       if(n.targetViewId)$('detail-actions').append(button('进入 '+viewById.get(n.targetViewId).title+' →',()=>enterModule(n.id),'btn primary'));
       else if(['模块','module','系统','system'].includes(n.kind))$('detail-actions').append(make('p','panel-note','尚未设计内部结构。'));
       $('detail-fields').replaceChildren();
+      $('detail-source-fields').replaceChildren();$('detail-code').open=false;
+      const implementation=n.implementation,state=IMPLEMENTATION_STATES[implementationStatus(n)];
+      const heading=$('detail-implementation-title');heading.replaceChildren(implementationIcon(n),document.createTextNode('实现情况'),make('span','implementation-label',state.label));
+      $('detail-implementation-note').replaceChildren();
+      if(implementation?.note)$('detail-implementation-note').append(make('p','',implementation.note));
+      $('detail-implementation-note').append(make('p','panel-note',state.description));
+      const sourceFields=new Set(['深入时看','规则来源','代码定位','来源','sources','codeReferences']);
+      const flowFields=new Set(['主流程','核心流程','步骤','steps']);
       for(const [name,value]of Object.entries(n.details)) {
-        const block=make('div','detail-block');block.append(make('h3','',fieldNames[name]??name));
-        if(Array.isArray(value)){const list=make('ul');for(const text of value)list.append(make('li','',byId.get(text)?.title??text));if(!value.length)block.append(make('p','','未列出'));else block.append(list);}
-        else block.append(make('p','',byId.get(value)?.title??value));$('detail-fields').append(block);
+        const technical=sourceFields.has(name),flow=Array.isArray(value)&&flowFields.has(name);
+        const wide=flow||(Array.isArray(value)?value.join('').length>100:value.length>110);
+        const block=make('section',technical?'source-field':'detail-card'+(wide?' detail-wide':'')+(flow?' detail-flow':'')),title=make(technical?'h4':'h3');
+        if(!technical)title.append(detailIcon(flow?'flow':detailCategory(name)));title.append(document.createTextNode(fieldNames[name]??name));block.append(title);
+        if(Array.isArray(value)){const list=make(flow?'ol':'ul',flow?'flow-steps':'detail-list');for(const text of value)list.append(detailText(make('li'),byId.get(text)?.title??text));if(!value.length)block.append(make('p','','未列出'));else block.append(list);}
+        else block.append(detailText(make('p'),byId.get(value)?.title??value));$(technical?'detail-source-fields':'detail-fields').append(block);
       }
+      // Complete each row before a full-width card instead of leaving a half-empty row.
+      let pending=null;for(const card of $('detail-fields').children){if(card.classList.contains('detail-wide')){pending?.classList.add('detail-wide');pending=null;}else if(pending)pending=null;else pending=card;}pending?.classList.add('detail-wide');
       const relations=$('detail-relations');relations.replaceChildren();
       for(const edge of current.edges.filter(e=>e.from===n.id||e.to===n.id)) {
         const forward=edge.from===n.id,other=byId.get(forward?edge.to:edge.from);
         const b=button((forward?'→ ':'← ')+other.title,()=>{select(other.id,true);focusNode(other.id);},'relation-button');b.append(make('small','',edge.label||edge.kind));relations.append(b);
       }
-      if(!relations.children.length)relations.append(make('p','notice','没有已声明的关系。'));
-      $('detail-sources').replaceChildren(...(n.sources.length?n.sources:['未附来源']).map(text=>make('code','source',text)));
-      $('detail-id').textContent=`对象 ID：${n.id} · ${data.revision}`;syncModuleActions();$('detail-close').focus({preventScroll:true});
+      $('detail-relation-card').hidden=!relations.children.length;
+      const evidence=[...new Set(implementation?.sources??[])],sources=[...new Set(n.sources)].filter(source=>!evidence.includes(source));
+      const sourceGroup=(id,label,items)=>{const group=$(id);group.replaceChildren();if(items.length){group.append(make('h4','',label));for(const source of items)group.append(make('code','source',source));}};
+      sourceGroup('detail-evidence','核对依据',evidence);sourceGroup('detail-sources',evidence.length?'其他来源':'相关来源',sources);
+      $('detail-source-count').textContent=evidence.length+sources.length?String(evidence.length+sources.length):'未附来源';
+      $('detail-id').textContent=`对象 ID：${n.id} · ${data.revision}`;syncModuleActions();if(document.documentElement.dataset.input==='keyboard')$('detail-body').focus({preventScroll:true});
     }
     function select(id,open=false){const n=byId.get(id);if(!n)return;selected=id;paintSelection();if(open)showDetails(n);announce('已选择：'+n.title+(n.targetViewId?'，可放大或进入模块。':''));}
 
@@ -198,26 +239,27 @@
     const requestEdges=()=>{if(!frame)frame=requestAnimationFrame(drawEdges);};
     function drawDirectory() {
       const query=$('search').value.trim().toLocaleLowerCase(),list=$('directory-list');list.replaceChildren();
-      for(const n of current.nodes)if([n.title,n.summary,n.kind,...n.sources].join(' ').toLocaleLowerCase().includes(query)) {
-        const b=button('',()=>{select(n.id,true);focusNode(n.id);},'');b.append(make('span','directory-name',n.title));
-        b.title=n.title;b.classList.toggle('current',n.id===selected);if(n.targetViewId)b.append(moduleMark());list.append(b);
+      for(const n of current.nodes)if([n.title,n.summary,n.kind,...n.sources,...(n.implementation?.sources??[])].join(' ').toLocaleLowerCase().includes(query)) {
+        const b=button('',()=>{select(n.id,true);focusNode(n.id);},'');b.append(implementationIcon(n),make('span','directory-name',n.title));
+        b.title=n.title+' · '+IMPLEMENTATION_STATES[implementationStatus(n)].label;b.classList.toggle('current',n.id===selected);if(n.targetViewId)b.append(moduleMark());list.append(b);
       }
       $('search-empty').hidden=list.children.length>0;
       $('directory-count').textContent=query?`${list.children.length} / ${current.nodes.length}`:String(current.nodes.length);
       $('directory-context').textContent='当前模块 · '+current.title;
     }
-    function nodeElement(n,index) {
+    function nodeElement(n) {
       const el=button('',(event)=>{
         if(!el.dataset.moved&&performance.now()>=suppressNodeClickUntil){
           wheelGesture.last=0;wheelGesture.used=false;
-          const already=selected===n.id;select(n.id,!n.targetViewId);
+          const already=selected===n.id;if(n.targetViewId)closeDetail(false);select(n.id,!n.targetViewId);
           if(n.targetViewId&&already&&event.detail===0)enterModule(n.id,{source:'keyboard'});
         }delete el.dataset.moved;
       },'node');
       el.dataset.id=n.id;el.dataset.kind=n.kind;el.dataset.origin=n.sourceOrigin??'';el.dataset.status=n.designStatus??'';
       Object.assign(el.style,{left:n.x+'px',top:n.y+'px',width:widthOf(n)+'px',height:heightOf(n)+'px'});
-      el.setAttribute('aria-label',n.title+' · '+n.kind+(n.targetViewId?'，选中后可进入内部':''));el.setAttribute('aria-pressed','false');el.title=n.title;
-      const kicker=make('div','node-kicker'),kind=make('span');kind.append(make('i'),document.createTextNode(n.kind));kicker.append(kind,make('small','',String(index+1).padStart(2,'0')));
+      const implementationLabel=IMPLEMENTATION_STATES[implementationStatus(n)].label;
+      el.setAttribute('aria-label',n.title+' · '+n.kind+' · '+implementationLabel+(n.targetViewId?'，选中后可进入内部':''));el.setAttribute('aria-pressed','false');el.title=n.title+' · '+implementationLabel;
+      const kicker=make('div','node-kicker'),kind=make('span');kind.append(make('i'),document.createTextNode(n.kind));kicker.append(kind,implementationIcon(n));
       el.append(kicker,make('h3','',n.title),make('p','',n.summary));
       if(n.targetViewId)el.append(moduleMark());else el.append(make('span','node-footer',n.sources[0]??n.id));
       el.dataset.module=String(Boolean(n.targetViewId));
@@ -251,7 +293,7 @@
       byId=new Map(current.nodes.map(n=>[n.id,n]));elements=new Map();edgeElements=new Map();
       $('view-title').textContent=current.title;$('view-subtitle').textContent=current.subtitle;$('zones').replaceChildren();$('nodes').replaceChildren();$('edge-paths').replaceChildren();$('edge-labels').replaceChildren();
       for(const zone of current.zones){const el=make('div','zone');Object.assign(el.style,{left:zone.x+'px',top:zone.y+'px',width:zone.width+'px',height:zone.height+'px'});el.append(make('span','zone-label',zone.title));$('zones').append(el);}
-      current.nodes.forEach((n,index)=>{const el=nodeElement(n,index);elements.set(n.id,el);$('nodes').append(el);});
+      current.nodes.forEach(n=>{const el=nodeElement(n);elements.set(n.id,el);$('nodes').append(el);});
       for(const edge of current.edges){const path=svg('path'),label=svg('text');path.setAttribute('class','edge');path.dataset.style=edgeStyle(edge.kind);path.dataset.edgeId=edge.id;label.setAttribute('class','edge-label');label.textContent=edge.label;$('edge-paths').append(path);$('edge-labels').append(label);edgeElements.set(edge.id,{path,label});}
       bounds=boundsOf(current);Object.assign(world.style,{width:bounds.width+'px',height:bounds.height+'px'});$('edges').setAttribute('width',bounds.width);$('edges').setAttribute('height',bounds.height);
       drawBreadcrumbs();
@@ -320,7 +362,7 @@
     $('enter-module').onclick=()=>enterModule(selected);$('inspect-module').onclick=()=>{const n=byId.get(selected);if(n)showDetails(n);};
     $('reset').onclick=()=>{for(const n of current.nodes){Object.assign(n,originals.get(current.id).get(n.id));const el=elements.get(n.id);el.style.left=n.x+'px';el.style.top=n.y+'px';}save();drawEdges();fit();feedback(storageAvailable?'已重置当前视图布局':'已重置布局；此浏览器无法保存。',storageAvailable?'success':'notice');};
     $('directory-open').onclick=()=>{const open=$('directory').hidden;if(open){closeDetail(false);drawDirectory();$('directory').hidden=false;$('directory-open').setAttribute('aria-expanded','true');syncModuleActions();$('search').focus();}else closeDirectory();};
-    $('directory-close').onclick=()=>closeDirectory();$('detail-close').onclick=()=>closeDetail();$('search').addEventListener('input',drawDirectory);$('search-clear').onclick=()=>{$('search').value='';drawDirectory();$('search').focus();};
+    $('directory-close').onclick=()=>closeDirectory();$('search').addEventListener('input',drawDirectory);$('search-clear').onclick=()=>{$('search').value='';drawDirectory();$('search').focus();};
     document.addEventListener('keydown',(event)=>{
       const editing=event.target.closest('input,textarea,select,[contenteditable=true]');
       if(event.altKey&&event.key==='ArrowLeft'&&!editing){event.preventDefault();goBack(null,{source:'keyboard'});return;}

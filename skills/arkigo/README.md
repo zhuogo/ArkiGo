@@ -1,6 +1,6 @@
-# ArkiGo Skill 1.0
+# ArkiGo Skill 1.1
 
-本地架构设计与阅读 Skill。支持从想法设计系统、从代码理解已有系统、查询模块和维护设计迭代。默认产物是目标项目的 `docs/canvas.json` 与 `docs/canvas.html`，用户可指定位置。
+帮助用户理解与设计项目的本地 Skill。把用途、模块协作、流程与来源组织成可探索的系统地图；追求表达精炼、层次清楚，保留有意义的分支与边界。支持从想法设计系统、从代码理解已有系统、查询模块和维护设计迭代。默认产物是目标项目的 `docs/canvas.json` 与 `docs/canvas.html`，用户可指定位置。
 
 ## 运行与安装
 
@@ -32,6 +32,7 @@ node skills/arkigo/scripts/install.mjs --user
 ```sh
 node scripts/query.mjs "<project>/docs/canvas.json"
 node scripts/query.mjs "<project>/docs/canvas.json" --search "注册"
+node scripts/query.mjs "<project>/docs/canvas.json" --implementation planned
 node scripts/query.mjs "<project>/docs/canvas.json" --view "registration"
 node scripts/query.mjs "<project>/docs/canvas.json" --id "submit" --view "registration"
 node scripts/render.mjs "<project>/docs/canvas.json" "<project>/docs/canvas.html"
@@ -47,7 +48,11 @@ node scripts/apply.mjs "<change>/base.json" "<change>/candidate.json" "<project>
 
 ## 画布能力与边界
 
+实现情况使用可选 `implementation`，独立于设计决策：planned（蓝色虚线圆）、partial（琥珀色半圆）、implemented（绿色勾）、unknown（灰色问号）。缺省按未核对显示和查询，不迁移旧数据。已实现与部分实现需要非空来源，部分实现还需缺口说明；不推断父模块进度，不表示测试通过或上线。卡片与目录只显示图标，悬停、读屏和详情可读含义。具体字段见[实现情况](references/canvas.md#实现情况)。
+
 统一离线 HTML 支持空间分区、节点、避障连线、详情和来源、模块逐层进入/返回、祖先面包屑、平移缩放、当前层搜索、浅深主题、节点拖动及布局保存/导出。模块卡片有独立样式；顶部保持简约。
+
+详情由独立的紧凑卡片拼接，外层不绘制整块容器。桌面双列、窄屏单列，流程与长内容占整行；多彩图标、加粗标题与显式关键词强调帮助扫读。重要规则和边界直接可读，源码与核对依据按需展开。详情不设关闭按钮和可见滚动条，点击外部或按 Esc 收起，保留滚动操作。首次指针进入有短促动效，切换节点和键盘操作立即响应，并支持减少动态效果偏好。
 
 每次显示一个活动层级。浏览器拖动不写回业务内容；来源是可复制定位文本。没有全层同时 LOD、无限图性能保证、浏览器内容编辑、浏览器变更对比、自动全仓理解或持续证据核验。程序查询和 diff 不等于自动业务影响分析。
 
@@ -59,6 +64,8 @@ node scripts/apply.mjs "<change>/base.json" "<change>/candidate.json" "<project>
 npm --prefix skills/arkigo test
 python -X utf8 skills/arkigo/tests/browser-smoke.py
 python -X utf8 skills/arkigo/tests/browser-semantic.py
+python -X utf8 skills/arkigo/tests/browser-implementation.py
+python -X utf8 skills/arkigo/tests/browser-details.py
 ```
 
 浏览器检查使用开发环境的 Python/Playwright/Chromium，不属于 Skill 运行依赖。合成万节点测试针对查询，不代表画布大图性能。真实使用仍需维护来源、范围和语义准确性。

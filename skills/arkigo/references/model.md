@@ -5,6 +5,7 @@
 模型包含 `schemaVersion: "0.1-draft"`、`project`、`revision`、`nodes`、`relations`。项目保存 `id/title/goal/scope/assumptions`；范围之外的内容不能默认为不存在。
 
 每个节点包含 `id/kind/title/summary/parentId/designStatus/provenance/details`。唯一 `system` 根的 `parentId` 为 `null`，其他归属组成无环树。
+节点也支持与画布相同的可选 `implementation`，适配器保留其状态、说明和来源；缺省为未核对。字段与要求见[实现情况](canvas.md#实现情况)，不改变已有 designStatus 的含义。
 
 | 类型 | details 必需内容 |
 | --- | --- |

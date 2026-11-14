@@ -7,12 +7,15 @@
 ```sh
 node "<skill-dir>/scripts/query.mjs" "<input.json>"
 node "<skill-dir>/scripts/query.mjs" "<input.json>" --search "注册"
+node "<skill-dir>/scripts/query.mjs" "<input.json>" --implementation planned
 node "<skill-dir>/scripts/query.mjs" "<input.json>" --view "registration"
 node "<skill-dir>/scripts/query.mjs" "<input.json>" --id "submit" --view "registration"
 node "<skill-dir>/scripts/query.mjs" "<input.json>" --field "/views/2/nodes/0/details"
 ```
 
 默认模式列画布视图索引，或模型中的模块/流程摘要。`--search` 对 ID、名称、摘要、类型和来源路径做文本匹配，不是语义检索，不全文检索冗长 details。`--view` 限定画布视图并返回节点摘要；模型没有视图，使用 `--id`。
+
+`--implementation planned|partial|implemented|unknown` 返回匹配状态的节点摘要，支持与 search/view 联用，不与 id/field 联用；无 view 时覆盖文档中的节点，但仍受分页和字节预算限制。缺省实现信息按 unknown 查询，不从来源或子节点推断。摘要只返回 `implementation.status`；目标详情才展开 note/sources，原文件缺省字段不会被写入。搜索也匹配实现来源路径，但不全文检索实现说明。
 
 `--id` 返回目标语义详情，以及分页的一跳关系、关联节点摘要、直接子节点；不递归展开依赖或所有后代。画布可在不同视图复用节点 ID，遇到 `AMBIGUOUS_ID` 根据候选补充 `--view`，不要任意选择第一个。
 

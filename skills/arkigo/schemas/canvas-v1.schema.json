@@ -73,10 +73,24 @@
         "zoneId": { "$ref": "#/definitions/id" },
         "targetViewId": { "$ref": "#/definitions/id" },
         "designStatus": { "enum": ["proposed", "accepted", "retired"] },
+        "implementation": { "$ref": "#/definitions/implementation" },
         "sourceOrigin": { "enum": ["user", "ai", "code", "import", "example"] },
         "details": { "type": "object", "additionalProperties": { "type": ["string", "array"], "items": { "type": "string" } } },
         "sources": { "type": "array", "items": { "$ref": "#/definitions/text" } }
       }
+    },
+    "implementation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["planned", "partial", "implemented", "unknown"] },
+        "note": { "$ref": "#/definitions/text" },
+        "sources": { "type": "array", "items": { "$ref": "#/definitions/text" } }
+      },
+      "allOf": [
+        { "if": { "properties": { "status": { "enum": ["partial", "implemented"] } } }, "then": { "required": ["sources"], "properties": { "sources": { "type": "array", "minItems": 1 } } } },
+        { "if": { "properties": { "status": { "const": "partial" } } }, "then": { "required": ["note"], "properties": { "note": { "$ref": "#/definitions/text" } } } }
+      ]
     },
     "edge": {
       "type": "object", "additionalProperties": false,

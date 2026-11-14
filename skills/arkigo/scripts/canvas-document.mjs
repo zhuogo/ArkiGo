@@ -67,7 +67,7 @@ export function modelToCanvas(model) {
   const root = model.nodes.find((n) => n.parentId === null);
   const kinds = { system: '系统', module: '模块', flow: '流程', step: '步骤', rule: '规则', acceptance: '验收', question: '问题' };
   const card = (n, x, y, zoneId) => ({ id: n.id, title: n.title, summary: n.summary, kind: kinds[n.kind], x, y, zoneId,
-    designStatus: n.designStatus, sourceOrigin: n.provenance.origin, details: Object.fromEntries(Object.entries(n.details).map(([k,v]) => [k, typeof v === 'string' || (Array.isArray(v) && v.every((x) => typeof x === 'string')) ? v : JSON.stringify(v)])), sources: n.provenance.references });
+    designStatus: n.designStatus, sourceOrigin: n.provenance.origin, ...(n.implementation ? { implementation: structuredClone(n.implementation) } : {}), details: Object.fromEntries(Object.entries(n.details).map(([k,v]) => [k, typeof v === 'string' || (Array.isArray(v) && v.every((x) => typeof x === 'string')) ? v : JSON.stringify(v)])), sources: n.provenance.references });
   const owner = (n) => { let p = byId.get(n.parentId); while (p && p.kind !== 'flow') p = byId.get(p.parentId); return p?.id; };
   const views = [];
   const overviewNodes = model.nodes.filter((n) => ['module', 'flow'].includes(n.kind));

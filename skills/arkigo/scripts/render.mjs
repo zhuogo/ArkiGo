@@ -38,9 +38,10 @@ export function renderCanvas(input, options = {}) {
   const css = readFileSync(new URL('../assets/canvas.css', import.meta.url), 'utf8');
   const geometry = readFileSync(new URL('../assets/canvas-geometry.mjs', import.meta.url), 'utf8').replace(/^export /gm, '');
   const navigation = readFileSync(new URL('../assets/canvas-navigation.mjs', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, '');
+  const implementation = readFileSync(new URL('../assets/canvas-implementation.mjs', import.meta.url), 'utf8').replace(/^export /gm, '');
   const runtime = readFileSync(new URL('../assets/canvas-runtime.js', import.meta.url), 'utf8');
   return template.replace('/*ARKIGO_STYLE*/', () => css)
-    .replace('/*ARKIGO_RUNTIME*/', () => geometry + '\n' + navigation + '\n' + runtime)
+    .replace('/*ARKIGO_RUNTIME*/', () => geometry + '\n' + navigation + '\n' + implementation + '\n' + runtime)
     .replace('<!--ARKIGO_DATA-->', () => payload);
 }
 
