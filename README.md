@@ -1,74 +1,176 @@
+<div align="center">
+
 # ArkiGo
 
-把产品想法编织成分层、可视化、可演进的系统设计。
+**跟 AI 聊想法，用一张图看懂项目。**
 
-## 命名
+把想法或已有项目，变成可以逐层探索的交互式系统架构图。
 
-- **项目名称**：ArkiGo。
-- **仓库与目录名称**：`arkigo`。
-- **Skill 名称**：`arkigo`，与项目同名。
-- **名称含义**：Arki 借用 Architecture（架构）开头的发音，是品牌造词，并非表示架构的标准英文词；Go 表达从设计走向实现与持续迭代。
+[开始使用](#开始使用) · [先体验示例](#先体验示例) · [使用文档](./skills/arkigo/README.md)
 
-## 项目定位
-
-探索一种面向 AI 开发的系统设计范式，用结构化设计与语义缩放画布，替代传统 PRD 作为主要设计载体，并保留需求、边界、异常和验收依据。
-
-用户表达想法后，AI 按统一方法梳理设计；人通过画布阅读和编辑，AI 通过同一份结构化模型理解和更新。设计随开发与迭代持续维护。
-
-## 核心组成
-
-| 组成 | 职责 |
-| --- | --- |
-| `arkigo` Skill | 引导 AI 澄清目标、拆解模块、梳理流程与异常、标记待决策问题、生成和维护设计 |
-| 结构化设计模型 | 保存稳定的对象 ID、层级、关系、业务规则、验收条件、版本与代码映射 |
-| 语义缩放画布 | 缩远显示系统全景，放大逐步显示模块、业务逻辑、界面、实现关联与验证结果 |
-| 变更记录 | 区分设计计划与实现状态，展示新增、修改、删除与影响范围，区分内容变化和布局移动 |
-| MCP 接口（按需增加） | 在需要多个 AI 客户端访问独立画布工具时，提供设计查询和更新能力 |
-
-## 使用流程
-
-表达想法 → 梳理目标与边界 → 生成设计草案 → 在画布中查看与修订 → 指导实现与验收 → 同步设计、代码关联和迭代变化。
-
-## 设计原则
-
-- 支持层级嵌套，也支持跨模块依赖；不把所有关系强制塞进树形结构。
-- 文本、图片、原型等内容关联到明确的设计对象。
-- 明确区分用户已确认要求、AI 建议、假设和待决策问题。
-- 根据风险和复杂度展开设计，允许原型与实际反馈修正前置设计。
-- 设计与实现的关联需要维护和验证，不把预期自动当作已实现事实。
-
-## 名称核查
-
-核查日期：2026-11-11。
-
-GitHub 搜索 API 的公开仓库查询结果（`incomplete_results: false`）：
-
-| 查询 | 结果 |
-| --- | --- |
-| [`arkigo in:name`](https://github.com/search?q=arkigo+in%3Aname&type=repositories) | 0 个仓库 |
-
-当前未发现该名称对应的公开仓库。结果以当时可检索的公开仓库为限，不代表名称预留、商标核查或未来唯一性；GitHub 仓库的实际标识为 `owner/repository`。
-
-## 当前状态
-
-项目与 Skill 统一命名为 `arkigo`。已形成可独立安装的 Skill 1.1：新系统设计、已有系统理解和设计迭代，共用有界查询、校验、程序差异、候选应用与离线画布。使用方法见[Skill 与本地工具](./skills/arkigo/README.md)。新项目默认输出 `docs/canvas.json` 与 `docs/canvas.html`。
-
-1.1 增加独立的实现情况：待实现、部分实现、已实现、未核对，以不同形状的彩色图标呈现；缺省为未核对，不从设计接受、来源或子节点推断完成度。先体验[实现情况画布](./docs/poc/canvas-engine/implementation.html)，查看核对范围、缺口和来源。实现记录不等于测试通过或上线。
-
-先打开 **[用户注册四级画布](./docs/poc/canvas-engine/registration.html)**：系统全景 → 用户模块 → 用户注册 → 创建用户记录。选中模块后点击进入、双击或放大深入；缩小、祖先面包屑或 `Alt+Left` 返回，恢复父级相机与选中。另有 [ArkiGo 引擎架构](./docs/poc/canvas-engine/index.html) 和 [任务清单画布](./docs/poc/canvas-engine/tasks.html)，三份通用 JSON 共用离线运行时，支持详情、搜索、主题切换、拖动及布局保存/导出。
-
-本轮自动测试与独立安装验证见 [Skill 验收记录](./docs/07-Skill验收.md)；原画布阶段已通过基础浏览器回归与 10 项模块导航场景，检查了桌面和 320/375px 手机布局。历史样例与范围见 [POC](./docs/poc/README.md)。
-
-Archify 源码快照仅供本地研究，不纳入本仓库，也不作为运行依赖；来源提交与下载记录见 [参考资源说明](./resource/README.md)，研究文档链接到对应的上游固定版本。
-
-2026-11-13 当前工作以[起步范围](./docs/00-起步范围.md)与 Skill 实际命令为准。AI 读取、分析和组织 JSON；query 控制单次返回范围与字节量，diff 计算结构化变化，apply 校验并应用候选，公共生成器交付 HTML。生成器不自动扫描仓库，不承诺无限图性能、自动业务影响推断、持续证据核验或多进程事务。
-
-在此目录快速验证：
+</div>
 
 ```sh
-npm --prefix skills/arkigo ci
-node skills/arkigo/scripts/validate.mjs docs/examples/login.candidate.json
-node skills/arkigo/scripts/render.mjs docs/poc/canvas-engine/arkigo.canvas.json docs/poc/canvas-engine/index.html
-node skills/arkigo/scripts/render.mjs docs/poc/canvas-engine/registration.canvas.json docs/poc/canvas-engine/registration.html
-npm --prefix skills/arkigo test
+npx skills add zhuogo/ArkiGo --skill arkigo -g
 ```
+
+一行安装到你的 AI 助手。需要 Node.js 22.20+ 和 Git；不熟悉命令也可以[让 AI 帮你安装](#1-安装-arkigo)。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/architecture-dark.png">
+  <img src="./docs/assets/architecture-light.png" alt="ArkiGo 用户注册示例：从系统全景进入注册流程，看清输入校验、账号检查、创建用户和成功或失败的分支。" width="1440">
+</picture>
+
+*实际画布截图 · 用户注册设计示例。先看全局，再进入模块，逐层看清细节。*
+
+## 你可以用它做什么？
+
+「我有一个想法，但不知道怎么拆成具体功能。」
+
+「AI 写了不少代码，可我还没弄明白这个项目是怎么运作的。」
+
+「我想改一个功能，应该先看哪一部分？」
+
+把这些问题交给 ArkiGo。它会引导 AI 梳理项目，把主要模块、协作关系、业务流程和需要确认的问题组织成一张可以探索的项目地图。
+
+| 你现在的情况 | ArkiGo 帮你做什么 |
+| --- | --- |
+| **只有一个想法** | 和 AI 一起理清要做什么、有哪些功能、哪些问题还没想好 |
+| **已经有一个项目** | 让 AI 阅读相关代码，用图说明各部分的职责和运作流程 |
+| **准备修改一个功能** | 找到相关模块，讨论规则和异常情况，让 AI 更新设计图 |
+
+**你负责表达需求和确认方向，AI 负责梳理内容，ArkiGo 把它呈现成图。**
+
+## 一张图，怎么看？
+
+- **先看全局**：项目有哪些部分，它们怎样配合。
+- **再进入模块**：双击带层叠标记的模块，逐层查看内部结构；点击顶部路径返回上层。
+- **点开看细节**：查看这个环节做什么、有哪些规则、失败时怎么办；已有代码的模块还可以记录源码位置。
+- **继续和 AI 聊**：哪里不清楚、哪里需要调整，直接提出，让 AI 更新图。
+
+例如，一个注册功能可以这样逐层展开：
+
+**系统全景 → 用户模块 → 用户注册 → 创建用户记录**
+
+生成好的图是一个 HTML 文件，用浏览器就能打开，也可以发给别人离线查看。支持搜索、浅色与深色主题，以及拖动调整布局。
+
+## 开始使用
+
+### 1. 安装 ArkiGo
+
+ArkiGo 是给 AI 助手使用的 **Skill（技能包）**。你的助手需要支持 Skill，并且能读取本地文件、运行命令。
+
+已有 [Node.js 22.20 或以上](https://nodejs.org/) 和 Git？打开终端，运行：
+
+```sh
+npx skills add zhuogo/ArkiGo --skill arkigo -g
+```
+
+按提示选择你使用的 AI 助手，完成后重新打开会话。`-g` 表示安装到用户目录，以后在不同项目中都能使用。安装由 [skills CLI](https://github.com/vercel-labs/skills) 完成，无需先下载整个仓库。
+
+**第一次画图时，AI 会按 Skill 指引安装运行依赖，需要联网；之后生成和打开图都可离线完成。** AI 对话本身是否需要联网，取决于你的助手。
+
+不熟悉终端，或者不确定环境是否齐全？把下面这段话发给 AI：
+
+```text
+请帮我安装 ArkiGo：https://github.com/zhuogo/ArkiGo
+先阅读仓库的安装说明，检查所需环境，完成 Skill 和依赖安装，
+并确认当前助手可以识别和使用 arkigo。
+```
+
+<details>
+<summary>更新已安装的 Skill，或使用手动安装</summary>
+
+通过上面的 skills CLI 安装后，可以只更新 ArkiGo：
+
+```sh
+npx skills update arkigo -g
+```
+
+如果想手动安装，ArkiGo 自身需要 Node.js 22+。以下命令还需要 Git：
+
+```sh
+git clone https://github.com/zhuogo/ArkiGo.git
+cd ArkiGo
+node skills/arkigo/scripts/install.mjs --user
+```
+
+安装器会显示安装位置。进入该目录，安装运行依赖：
+
+```sh
+npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+```
+
+默认安装位置为 `~/.codex/skills/arkigo`；设置了 `CODEX_HOME` 时使用其下的 `skills/arkigo`。其他客户端可把 `--user` 换成该客户端 Skill 目录下的空目标路径。已有目录不会被覆盖。
+
+安装后，确认你的 AI 助手能识别 `arkigo`。完整说明见 [Skill 安装与用法](./skills/arkigo/README.md#运行与安装)。
+
+</details>
+
+### 2. 告诉它，你想看懂什么
+
+不需要先写一份完整需求，也不需要学习画图语法。选一个接近你情况的例子，把内容换成自己的：
+
+**从一个想法开始**
+
+```text
+$arkigo 我想做一个个人记账工具，支持记录收支和查看每月统计。
+请帮我理清主要功能和使用流程，生成一张能逐层查看的系统架构图。
+还没确定的地方请标出来。
+```
+
+**看懂已有项目**
+
+```text
+$arkigo 请帮我看懂当前项目：它是做什么的，主要模块怎样配合？
+先梳理核心流程，生成系统架构图，并记录相关代码的位置。
+```
+
+**继续修改设计**
+
+```text
+$arkigo 在现有设计里增加“忘记密码”功能。
+请先和我确认流程及异常情况，再更新相关模块和系统架构图。
+```
+
+### 3. 打开图，边看边聊
+
+请 AI 告诉你生成文件的位置，用浏览器打开其中的 **`canvas.html`**。
+
+看图时，你可以继续说：「这个模块再讲细一点」「这里失败了会怎样」「先去掉这个功能」。让 AI 按你的反馈修改，再刷新页面查看。
+
+默认文件放在你正在设计或分析的项目中：
+
+| 文件 | 用途 |
+| --- | --- |
+| `docs/canvas.html` | 你打开、浏览和分享的图 |
+| `docs/canvas.json` | AI 下次继续修改这张图所需的内容，请一起保留 |
+
+## 先体验示例
+
+还不想安装？可以先 **[下载本仓库](https://github.com/zhuogo/ArkiGo/archive/refs/heads/main.zip)**，解压后双击下面的 HTML 文件，用浏览器体验。
+
+| 示例 | 可以看什么 | 解压后打开 |
+| --- | --- | --- |
+| **用户注册** | 从系统全景逐层进入注册流程，查看成功和失败分支 | `docs/poc/canvas-engine/registration.html` |
+| **任务清单** | 任务新增的主流程与异常分支 | `docs/poc/canvas-engine/tasks.html` |
+| **实现情况** | 待实现、部分实现、已实现、未核对四种状态，以及说明和来源 | `docs/poc/canvas-engine/implementation.html` |
+| **ArkiGo 自身架构** | 用 ArkiGo 的图了解它自己的画布引擎 | `docs/poc/canvas-engine/index.html` |
+
+示例图可离线打开，无需安装 Skill 或启动服务。「用户注册」和「任务清单」是设计示例，方便你体验图的组织与交互。
+
+## 使用时需要知道
+
+- **改内容，继续找 AI**：目前画布用于查看和调整布局；业务内容通过 AI 修改，浏览器里的拖动只改变布局。
+- **AI 的分析需要你确认**：没有核对的地方应标为未知；图中的建议和代码的实际情况需要分别确认。
+- **实现状态要有依据**：「已实现」表示按记录的来源核对过，不代表已经测试通过或上线。
+- **生成的图可离线查看**：AI 分析、对话是否需要联网，取决于你使用的 AI 助手。
+
+ArkiGo 目前处于早期迭代阶段。欢迎通过 [Issues](https://github.com/zhuogo/ArkiGo/issues) 告诉我们：你想用它看懂什么项目，在哪一步遇到了困难。
+
+## 想了解更多？
+
+- [Skill 安装与完整用法](./skills/arkigo/README.md)
+- [画布示例与说明](./docs/poc/canvas-engine/README.md)
+- [设计文档](./docs/README.md)
+- [开发验证与验收记录](./docs/07-Skill验收.md)
