@@ -1,61 +1,59 @@
 <h1 align="center">ArkiGo</h1>
 
-<p align="center"><strong>给 AI 编程助手用的项目设计 Skill</strong></p>
+<p align="center"><strong>为 AI 编程项目维护一份可浏览、可追溯的设计</strong></p>
 
 <p align="center">
-  把需求、模块、流程和验收维护在同一份设计里，<br>
-  你用离线路线图看全局，AI 开工前读设计，做完回写代码依据和验收结果。
+  你在离线路线图上看需求、模块和流程。<br>
+  AI 开工前读取相关规则和验收，做完回写代码位置和测试结果。
 </p>
 
 <p align="center">
-  <a href="#开始使用">安装 Skill</a> ·
+  <a href="#开始使用">快速安装</a> ·
   <a href="https://github.com/zhuogo/ArkiGo/releases/latest/download/index.html">下载离线演示</a> ·
-  <a href="https://github.com/zhuogo/ArkiGo/releases/latest">发行说明</a>
+  <a href="https://skills.sh/zhuogo/arkigo/arkigo">在 skills.sh 查看</a>
 </p>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/arkigo-map-dark.jpg">
-  <img src="docs/assets/arkigo-map-light.jpg" alt="ArkiGo 的离线路线图，展示协作者、五个模块及模块之间的关系" width="1440">
-</picture>
 
 ## 开始使用
-
-快速安装需要 Node.js 22.20 或更高版本，以及支持 Skill 的 AI 编程助手。
 
 ```sh
 npx skills add zhuogo/ArkiGo --skill arkigo -g
 ```
 
-安装后，在项目里给 AI 一句任务。也可以[手动安装](skills/arkigo/README.md#手动安装)。
+使用 Node.js 22.20 或更高版本。安装时选择你的 AI 编程助手，例如 Codex 或 Claude Code。全局安装后，各项目都可以调用 ArkiGo。[手动安装](skills/arkigo/README.md#手动安装)
 
-| 你现在的情况 | 可以这样说 |
+<a href="https://github.com/zhuogo/ArkiGo/releases/latest/download/index.html">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/arkigo-map-dark.jpg">
+    <img src="docs/assets/arkigo-map-light.jpg" alt="ArkiGo 的离线路线图，展示协作者、五个模块和模块之间的关系。点击下载演示。" width="1440">
+  </picture>
+</a>
+
+## 在项目里试一次
+
+安装后，在项目目录里打开一个新的 AI 对话。已有代码时，可以先让 AI 整理项目。
+
+> 用 ArkiGo 梳理这个项目。沿现有代码画出主要模块和流程，标出依据的文件，把需要我确认的问题列出来。
+
+想从零开始，可以请 AI 整理目标、范围和主流程。要继续开发，可以请 AI 先读对应模块的规则和验收，再实现并回写结果。
+
+生成后，双击项目里的 `docs/arkigo/index.html`。点击模块看职责和关联文件，沿地图上的连线找依赖，也可以按标题、内容或代码依据查找。确认待定问题后，在对话里把决定告诉 AI。
+
+![离线路线图打开模块详情，显示模块作用和可复制的关联文件路径](docs/assets/arkigo-detail.jpg)
+
+## 设计怎么跟着代码更新
+
+项目的需求、规则、数据、接口和验收集中在 `docs/arkigo/design.json`。把整个 `docs/arkigo/` 与代码一起提交，下一次开发就能接着用。
+
+| 时机 | ArkiGo 提供什么 |
 | --- | --- |
-| 手上有个想法 | 用 ArkiGo 整理这个想法，写清目标、范围和主流程，把需要我决定的问题列出来。 |
-| 接手已有项目 | 用 ArkiGo 沿着代码整理模块和流程，标出依据的文件和还没核实的地方。 |
-| 要改一个功能 | 用 ArkiGo 读相关规则和验收，按确认后的设计实现，做完回写代码位置和实际验收结果。 |
+| 开工前 | `context` 读取这次要用的设计、规则、接口和验收。 |
+| 做完后 | `change` 记录代码位置、实际验收结果和你确认的决定。 |
+| 代码变动后 | `verify` 提示哪些登记过的依据文件发生变化或缺失。 |
 
-AI 生成设计后，双击项目里的 `docs/arkigo/index.html`。上面的离线演示是 ArkiGo 自身的路线图，下载后可以直接打开。
+路线图用带勾和虚线圆圈表示依据在生成时的核对状态。点开详情可查看具体文件。
 
-## 在路线图里看项目
+## 升级与维护
 
-顺着地图看模块和关系，点击卡片查看职责、流程和关联文件。用顶栏查找对象、沿层级进入模块，或按类型浏览清单。待定问题可以在详情中阅读，确认后在对话里告诉 AI。
+从 1.x 升级时，可以让 AI 用旧 `canvas.json` 整理出 `arkigo/2` 格式的设计，再核对原先的规则和流程。
 
-地图上的带勾圆圈表示生成页面时，已登记的代码依据全部匹配。虚线圆圈表示待核对。具体依据在卡片详情里。
-
-![离线路线图右侧打开模块详情，显示模块作用及关联文件](docs/assets/arkigo-detail.jpg)
-
-## 让设计和代码一起更新
-
-- **确认设计。** 需求、规则、数据、接口和验收放进 `docs/arkigo/design.json`，每项内容都有来源。AI 的提议和你确认的决定各有状态。
-- **按设计开发。** AI 用 `context` 读取本次要用的规则、接口和验收，用 `change` 记录实现位置和实际验收结果。
-- **复查代码依据。** `verify` 检查登记过的文件是否变化或缺失，提示哪些设计需要复查。
-
-把整个 `docs/arkigo/` 和代码一起提交，下次就能按同一份设计继续开发。
-
-## 从 1.x 升级
-
-2.x 使用 `arkigo/2`。可以让 AI 把旧版 `canvas.json` 当作资料，整理出新的设计，然后核对原有规则和流程的落点。
-
-## 开发与许可
-
-[维护说明](skills/arkigo/README.md) · [Skill 指引](skills/arkigo/SKILL.md) · [MIT 许可证](LICENSE)
+[发行说明](https://github.com/zhuogo/ArkiGo/releases/latest) · [维护说明](skills/arkigo/README.md) · [Skill 指引](skills/arkigo/SKILL.md) · [MIT 许可证](LICENSE)

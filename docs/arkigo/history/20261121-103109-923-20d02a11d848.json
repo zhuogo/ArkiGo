@@ -1,0 +1,253 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T10:31:09.923Z",
+  "by": "codex",
+  "reason": "为 GitHub README 和 skills.sh 详情页补充安装、用法和离线演示入口，并复查技能指引依据。",
+  "base": "7d1dbb63c175",
+  "result": "20d02a11d848",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "practice",
+        "type": "module",
+        "title": "使用闭环与分发",
+        "summary": "指导 AI 从想法或代码建档，在开发前后与用户来回核对，并提供可复制安装包。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 50,
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "boundaries": [
+            "AI 负责内容和判断，程序不替用户决策",
+            "包供技能客户端安装，离线页面交给人阅读"
+          ],
+          "responsibilities": [
+            "提供按任务选读的指引、版本检查和独立安装",
+            "维护开工、回写、复查和对话协作约定"
+          ]
+        },
+        "notes": [
+          {
+            "text": "改使用闭环时读 [[practice.start]]、[[practice.develop]]。固定文本见 [[practice.ai-text]]。涉及分发时核对 [[practice.install]]、[[practice.version]] 和 [[practice.install-test]]。",
+            "title": "从哪里开工",
+            "type": "text"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 1、2、9、11 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/SKILL.md",
+            "symbol": "分工、先看这次是哪种情况"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/version.mjs",
+            "symbol": "version"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+              "path": "skills/arkigo/SKILL.md",
+              "symbol": "分工、先看这次是哪种情况"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "ad87dab2fd8c0f6fd8c1543e22a4ffa2de6b0b10f77f5f5f46a5700027d149c2",
+              "path": "skills/arkigo/scripts/commands/install.mjs",
+              "symbol": "install"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
+              "path": "skills/arkigo/scripts/commands/version.mjs",
+              "symbol": "version"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice.develop",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "practice.develop",
+        "type": "flow",
+        "title": "从开工材料到实现回写",
+        "summary": "开发前取范围，写完登记代码位置和实际验收，代码变化后复查依据。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "doc",
+        "body": {
+          "ends": [
+            "record"
+          ],
+          "start": "read",
+          "steps": [
+            {
+              "action": "AI 用 query 找 ID，以 context 读规则、接口、验收和决定。",
+              "actor": "assistant",
+              "failure": "材料不足则续读；被未决项挡住时交给用户，继续不受影响的工作。",
+              "id": "read",
+              "title": "读取材料"
+            },
+            {
+              "action": "按明确要求改设计再开工；AI 提议等待拍板。",
+              "actor": "assistant",
+              "id": "align",
+              "title": "对齐方案"
+            },
+            {
+              "action": "AI 按规则写代码并执行验收。",
+              "actor": "assistant",
+              "failure": "未运行保持未验证，失败记录实际结果。",
+              "id": "code",
+              "title": "实现和验证"
+            },
+            {
+              "action": "AI 用 change 的 implement 和 verify 修改项回写，代码再变时复查。",
+              "actor": "assistant",
+              "id": "record",
+              "title": "回写记录"
+            }
+          ],
+          "transitions": [
+            {
+              "from": "read",
+              "to": "align"
+            },
+            {
+              "from": "align",
+              "to": "code"
+            },
+            {
+              "from": "code",
+              "to": "record"
+            }
+          ],
+          "trigger": "用户要求改功能或继续开发。"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 1、4.6、11.1 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/SKILL.md",
+            "symbol": "分工、先看这次是哪种情况、没定的事交给用户"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/references/loop.md",
+            "symbol": "写代码之前、写完代码之后、用户确认之后"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "eb7c35c6766d5474f5c976a206be2ab1e85f55345f6f1d160a8d3a77652c9d57",
+              "path": "skills/arkigo/references/loop.md",
+              "symbol": "写代码之前、写完代码之后、用户确认之后"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+              "path": "skills/arkigo/SKILL.md",
+              "symbol": "分工、先看这次是哪种情况"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice.provenance",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "practice.provenance",
+        "type": "rule",
+        "title": "事实、建议和用户决定各有出处",
+        "summary": "按已有材料建档，提议需要拍板，未知的问题单独联到受影响对象。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "constraint": "明确要求记 user/accepted；代码和文档既成事实记 code 或 doc/accepted 并带出处；建议记 ai/proposed。未知会改变做法时用有选项的决定关联受影响对象。代码与文档冲突时记录现状与两边出处，交用户选择。",
+          "when": "AI 写入或核对设计时"
+        },
+        "notes": [
+          {
+            "text": "先读入口、协议和真实调用，再按职责分块。来源说明内容从何处读来，实现依据说明在哪里做到了。尚未阅读的部分标出范围。",
+            "type": "text"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 1、2 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/SKILL.md",
+            "symbol": "分工、先看这次是哪种情况、没定的事交给用户"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/references/existing-system.md",
+            "symbol": "三种信息分开记、步骤"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+              "path": "skills/arkigo/SKILL.md",
+              "symbol": "分工、先看这次是哪种情况、没定的事交给用户"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "34c2137b35841cc8cb43b7ec50a3a226aefdb3b519f9b1cd92422ca3bfc93acc",
+              "path": "skills/arkigo/references/existing-system.md",
+              "symbol": "三种信息分开记、步骤"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    }
+  ]
+}

@@ -1074,19 +1074,19 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
-            "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
+            "hash": "13406dc12db408fde2de3f4f8d0272b45731e9e113d80889b830c9534e1955b5",
             "path": "skills/arkigo/SKILL.md",
             "symbol": "分工、先看这次是哪种情况"
           },
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
             "hash": "ad87dab2fd8c0f6fd8c1543e22a4ffa2de6b0b10f77f5f5f46a5700027d149c2",
             "path": "skills/arkigo/scripts/commands/install.mjs",
             "symbol": "install"
           },
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
             "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
             "path": "skills/arkigo/scripts/commands/version.mjs",
             "symbol": "version"
@@ -1347,14 +1347,14 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
             "hash": "eb7c35c6766d5474f5c976a206be2ab1e85f55345f6f1d160a8d3a77652c9d57",
             "path": "skills/arkigo/references/loop.md",
             "symbol": "写代码之前、写完代码之后、用户确认之后"
           },
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
-            "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
+            "hash": "13406dc12db408fde2de3f4f8d0272b45731e9e113d80889b830c9534e1955b5",
             "path": "skills/arkigo/SKILL.md",
             "symbol": "分工、先看这次是哪种情况"
           }
@@ -1669,13 +1669,13 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
-            "hash": "0b562fc455163c632d106e5ab33f8dfe4eb64a97e0d985e1203b896a6872c7df",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
+            "hash": "13406dc12db408fde2de3f4f8d0272b45731e9e113d80889b830c9534e1955b5",
             "path": "skills/arkigo/SKILL.md",
             "symbol": "分工、先看这次是哪种情况、没定的事交给用户"
           },
           {
-            "checkedAt": "2026-11-21T07:55:15.127Z",
+            "checkedAt": "2026-11-21T10:31:09.923Z",
             "hash": "34c2137b35841cc8cb43b7ec50a3a226aefdb3b519f9b1cd92422ca3bfc93acc",
             "path": "skills/arkigo/references/existing-system.md",
             "symbol": "三种信息分开记、步骤"
