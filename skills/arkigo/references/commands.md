@@ -81,7 +81,7 @@ arkigo change --from-decisions decisions.json --reason "用户在页面上拍板
 - `warnings` 是这次改动新带来的提醒，改动之前就有的不重复列出；要看全部用 `check`，含义也见下文 `check`。提醒不阻止写入。
 - `--by` 记录是谁改的，默认 `ai`。替用户记录他的决定时写用户的名字。
 - `--base` 写你读设计时看到的 `rev`。设计在那之后被改过时，命令以退出码 3 拒绝（`BASE_CONFLICT`）：重新读取，确认你的修改仍然成立，再写。
-- `--from-decisions` 应用用户在页面上导出的拍板结果，用法见 [loop.md](loop.md#用户在页面上拍板之后)。
+- `--from-decisions` 应用旧版离线页导出的决定，用法见 [loop.md](loop.md#用户确认之后)。
 
 校验失败时（退出码 1）：
 

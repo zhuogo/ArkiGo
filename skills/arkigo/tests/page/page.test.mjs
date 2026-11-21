@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { layoutFlow, layoutMap, overlaps } from '../../assets/layout.mjs';
 import { indexDesign, projectRelations } from '../../assets/model.mjs';
 import { parseInline } from '../../assets/inline.mjs';
-import { routeConnection, segmentHitsBox } from '../../assets/routing.mjs';
+import { roundedPath, routeConnection, segmentHitsBox } from '../../assets/routing.mjs';
 import { buildSearchIndex, searchDesign } from '../../assets/search.mjs';
 import { buildPage } from '../../scripts/page.mjs';
 import { clinicInput, pageInput } from './fixtures.mjs';
@@ -123,6 +123,22 @@ test('horizontal map keeps cards at full size: partitions side by side, wrapped 
   assert.ok(minor.edges.every(({ back }) => !back));
 });
 
+test('a blocked connection takes a short curved route around the card', () => {
+  const from = { x: 16, y: 38, width: 264, height: 136 };
+  const blocker = { ...from, y: 206 };
+  const to = { ...from, y: 526 };
+  const cards = [from, blocker, to];
+  const points = routeConnection(from, to, cards, false, false);
+  const length = points.slice(1).reduce((sum, point, i) => sum +
+    Math.hypot(point.x - points[i].x, point.y - points[i].y), 0);
+  assert.ok(length < 560);
+  assert.ok(Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) >= 28);
+  assert.ok(Math.hypot(points.at(-1).x - points.at(-2).x, points.at(-1).y - points.at(-2).y) >= 28);
+  assert.ok(points.slice(1).every((point, i) =>
+    cards.every((card) => !segmentHitsBox(points[i], point, card))));
+  assert.match(roundedPath(points, cards), / Q/);
+});
+
 test('projection lifts endpoints, merges parallel relations and counts annotations', () => {
   const relations = [
     edge('appointment', 'visit-record'), edge('reserve-api', 'visit-api'), edge('appointment', 'reserve-api'),
@@ -212,14 +228,6 @@ test('generation is deterministic, offline and keeps dangerous values in inert J
   assert.match(payload, /\\u2028.*\\u2029/);
   const clinic = clinicInput();
   assert.deepEqual(JSON.parse(/id="arkigo-data">([^<]*)<\/script>/.exec(buildPage(clinic))[1]), clinic);
-});
-
-test('generation bounds history by record count and escaped byte size', () => {
-  const input = clinicInput({ history: Array.from({ length: 38 }, (_, i) => ({ i })) });
-  const embedded = (value) => JSON.parse(/id="arkigo-data">([^<]*)<\/script>/.exec(buildPage(value))[1]);
-  assert.deepEqual(embedded(input).history, input.history.slice(0, 30));
-  const large = { reason: '<'.repeat(50_000) };
-  assert.deepEqual(embedded({ ...input, history: [large, large, { i: 1 }] }).history, [large]);
 });
 
 test('scale fixture has 500 objects, 800 distinct relationships and five levels', () => {

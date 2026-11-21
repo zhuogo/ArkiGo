@@ -3,9 +3,6 @@ export const types = {
   entity: '数据', interface: '接口', screen: '界面', acceptance: '验收', decision: '决策'
 };
 export const statuses = { proposed: '提议', accepted: '已接受', retired: '已作废' };
-export const implementations = {
-  planned: '待实现', partial: '部分实现', implemented: '已实现', unknown: '未核对', stale: '需复查'
-};
 export const relationNames = {
   depends_on: '依赖', calls: '调用', reads: '读取', writes: '写入', governed_by: '受规则约束',
   verifies: '验证', blocks: '卡住', uses: '使用', relates: '关联'

@@ -1,0 +1,341 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T08:00:21.371Z",
+  "by": "codex",
+  "reason": "登记精简路线图的浏览器及命令行验收结果",
+  "base": "22455b129d72",
+  "result": "31c67055e43c",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.workflow-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.evidence",
+        "verification.note"
+      ],
+      "before": {
+        "id": "practice.workflow-tests",
+        "type": "acceptance",
+        "title": "技能闭环与固定文本回归",
+        "summary": "覆盖项目规则、开工、代码回写及依据复查。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "临时项目和生成的离线路线图"
+          ],
+          "then": [
+            "验证项目规则标记、开工材料和开发前后的设计同步。",
+            "验证改动后可复查依据。"
+          ],
+          "when": "运行四组测试的相应用例"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-20T15:14:25.556Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/read.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test，core 98、page 20、browser 45、e2e 11，全部通过。",
+          "status": "passed"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.map",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "viewer.map",
+        "type": "screen",
+        "title": "地图",
+        "summary": "按一层归属看卡片、分区和主要关系；选中一张卡片再看它的全部关系。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "elements": [
+            "系统和模块只显示直接下级。模块、流程、数据、接口、界面成卡；角色可以从查找或详情打开，本层没有别的卡片时才成卡。规则、验收、决策在所属对象的详情中阅读。",
+            "主界面采用顶栏、画布和底栏。画布内禁止原生文本选取和拖拽，卡片拖动和画布平移由应用管理。",
+            "有实现依据且生成时全部核对一致的卡片显示带勾圆圈，其余显示虚线圆圈。",
+            "按分组或类型分区；宽屏分区并排，放不下换行。自动排版按主要关系分层，同一输入位置稳定，手动位置保存在浏览器并可导出。",
+            "连接线将下级关系合并到可见卡片，点击标签查看原关系。线多于卡片时默认只画主要关系，选中后显示该卡片的全部连线。",
+            "在宽屏和窄屏单击卡片均打开详情。进入模块和查看流程在详情内提供。双击和画布缩放导航也可进入，顶栏路径和缩小可返回。底栏提供缩放、适应、布局重置及导出。"
+          ],
+          "purpose": "项目负责人先看组成；维护者进入一个模块找流程、接口及关系。",
+          "route": "#/map/<对象ID>",
+          "states": [
+            "无卡片时显示空层，可以点击顶栏当前路径查看本层详情。",
+            "使用指针平移或拖动卡片时，画布边缘不显示焦点轮廓。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.1 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/map.js",
+            "symbol": "registerRead 的 render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/model.mjs",
+            "symbol": "indexDesign、projectRelations"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/layout.mjs",
+            "symbol": "layoutMap、layoutFlow"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/camera.js",
+            "symbol": "createCamera"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render、navigate、initialize"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 接手时读到的用户留言：1.0 更清晰；同意地图照 1.0 重画的方案（卡片正常大小，默认只画主线，选中再看其他关系）"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/graph.js",
+            "symbol": "graphCard, renderGraph"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/dom.js",
+            "symbol": "codeCheckMark"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.css",
+            "symbol": "画布选取、焦点和导航样式"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "9aec648dbaf18eb9aa6d0ca4f7430d076c5063c4505bf245b6766423bb2cf851",
+              "path": "skills/arkigo/assets/graph.js",
+              "symbol": "graphCard, renderGraph"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "32526f1957cd902838fa57c9f64eead477b4924ba5ea76114e4e8079c1c984e7",
+              "path": "skills/arkigo/assets/camera.js",
+              "symbol": "createCamera"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "fd68025c0ee9a23458b9f25641a20841fb45b07d0a0e0b1058b0debdeefc0c6a",
+              "path": "skills/arkigo/assets/readings/map.js",
+              "symbol": "地图读法的 render"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "9f72e22c02bf0fc422f4440b8d5ff0ee60a7cf38fe1fa99bdb4508619717e184",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "drawNavigation, navigate, select"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "e3310f6b69ffd759502803a43e0ab902b8506546f56adcff1e69a30db0420109",
+              "path": "skills/arkigo/assets/dom.js",
+              "symbol": "codeCheckMark"
+            },
+            {
+              "checkedAt": "2026-11-21T07:55:15.127Z",
+              "hash": "ad3626be317a6ff99371f748c6caaed6b61f3b9beb21b3eb307b4ce0e4bedcee",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "画布选取、焦点和导航样式"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.evidence",
+        "verification.note"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从文件打开路线图，验证导航、详情、画布拖动与核对图标。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "桌面与窄屏离线页面，含跨层关系、长内容及不同的代码依据状态"
+          ],
+          "then": [
+            "顶栏、画布与底栏可用，详情操作从对象进入，旧拍板、进度及变更地址回到地图。",
+            "拖动画布不选中文字，指针操作不显示画布焦点轮廓，键盘仍可导航。",
+            "核对图标遵循代码依据快照，地图、流程、查找、清单、主题和布局交互通过回归。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T04:21:26.329Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "改版后在本机执行：npm run test:page（21）、npm run test:browser（47，Chromium 与 WebKit）、npm run test:e2e（11）通过；test:core（98）同时通过。",
+          "status": "passed"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.scale-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.note",
+        "verification.status"
+      ],
+      "before": {
+        "id": "viewer.scale-tests",
+        "type": "acceptance",
+        "title": "500 对象规模基准",
+        "summary": "页面可用不超过 1000ms，切换读法不超过 200ms，40 卡排版不超过 50ms。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "doc",
+        "body": {
+          "given": [
+            "合成设计有 500 个对象、800 条关系、5 层，首层可见 40 张卡片，使用无头 Chromium"
+          ],
+          "then": [
+            "页面可用不超过 1000ms，切换读法不超过 200ms，40 卡排版不超过 50ms。",
+            "记录实测，并保留超出目标的情形。"
+          ],
+          "when": "分别运行 tests/browser/benchmark.mjs 和 tests/browser/readings-benchmark.mjs"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.11 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/benchmark.mjs",
+            "symbol": "40 卡布局、页面可用计时"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings-benchmark.mjs",
+            "symbol": "读法切换计时"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T04:21:26.329Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/benchmark.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings-benchmark.mjs"
+            }
+          ],
+          "note": "改版后两份 Chromium 规模脚本各采样 5 次。最大值：可用 174.4ms，40 卡排版 10.0ms，进入流程 26.0ms，清单 159.9ms，进度 67.2ms，变更 74.2ms，待拍板 44.3ms。这组均达标，历史偶发超时仍待决定。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

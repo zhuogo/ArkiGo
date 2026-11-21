@@ -41,16 +41,11 @@ function createDirectory(ctx) {
     const count = make('output', 'muted');
     count.setAttribute('aria-live', 'polite');
     const contentsTree = make('div', 'search-directory');
-    // The pages without an entry of their own are found here as well.
     const pages = make('div', 'browse-pages');
-    for (const [mode, label, glyph] of [
-      ['inventory', '按类型列出全部', 'inventory'], ['progress', '实现情况', 'progress'], ['changes', '最近变更', 'reset']
-    ]) {
-      const page = button(label, () => ctx.navigate(mode, ctx.selection() ?? ctx.viewId), 'tool');
-      page.dataset.mode = mode;
-      page.prepend(icon(glyph));
-      pages.append(page);
-    }
+    const catalog = button('按类型列出全部', () => ctx.navigate('inventory', ctx.selection() ?? ctx.viewId));
+    catalog.dataset.mode = 'inventory';
+    catalog.prepend(icon('inventory'));
+    pages.append(catalog);
     contentsTree.append(tree(), pages);
     const render = () => {
       const typed = Boolean(input.value.trim());
@@ -115,9 +110,10 @@ function createDirectory(ctx) {
       const link = objectLink(ctx, object.id, undefined, 'tree-object', true);
       link.prepend(typeMark(object.type));
       if (object.id === ctx.selection()) link.setAttribute('aria-current', 'true');
-      row.append(link, statusMark(object.status, statuses, 'design-status'));
+      row.append(link);
+      if (object.status !== 'accepted') row.append(statusMark(object.status, statuses, 'design-status'));
       const state = implementationState(object, ctx.evidence);
-      if (state) row.append(statusMark(state, implementations, 'implementation-status'));
+      if (state) row.append(codeCheckMark(object, ctx.evidence));
       item.append(row);
       if (children.length) item.append(sub);
       return item;

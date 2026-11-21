@@ -6,10 +6,6 @@ const restored = new Map();
 const storageKey = 'arkigo-layout-v2:' + input.design.id;
 const originalPositions = input.layout?.views ?? {};
 const savedPositions = readStorage(storageKey, {});
-const decisionKey = 'arkigo-decisions-v1:' + input.design.id;
-let decisions = retainDecisions(readStorage(decisionKey, []), index, input.rev);
-let activeChange = null;
-let changeMarks = new Map();
 const firstRead = readModes.keys().next().value;
 let state;
 let scene;
@@ -47,42 +43,13 @@ function canEnter(address) {
     object?.type === 'module' && index.children.has(address) && state.viewId !== address;
 }
 
-function heading(title, summary, facts = []) {
-  byId('view-title').textContent = title;
-  byId('view-summary').textContent = summary;
-  byId('view-summary').hidden = !summary;
-  byId('view-facts').replaceChildren(...facts);
-  byId('view-facts').hidden = !facts.length;
-}
-
 const ctx = {
-  ...input, index, heading, positions, modeFor, canEnter,
+  ...input, index, positions, modeFor, canEnter,
   get viewId() { return state.viewId; },
-  get mode() { return state.mode; },
   get direction() { return narrowScreen.matches ? 'vertical' : 'horizontal'; },
   get availableWidth() { return Math.max(1, byId('viewport').clientWidth - 36); },
   selection: () => state?.selected,
   select, enter, back, move, jump,
-  readAddress: (address) => {
-    saveHistory();
-    state = { ...state, address, selected: address };
-    saveHistory(false);
-    paintSelection();
-  },
-  get decisions() { return decisions; },
-  setDecisions(entries) {
-    decisions = entries;
-    const saved = writeStorage(decisionKey, entries);
-    drawDecisionCount();
-    if (state.mode === 'decisions') renderReading();
-    return saved;
-  },
-  get activeChange() { return activeChange; },
-  setChange(record) {
-    activeChange = record;
-    changeMarks = historyMarks(index, input.history[record]);
-  },
-  marksFor: (id) => changeMarks.get(id),
   navigate: (mode, address, intent = 'switch') => navigate(mode, address, intent)
 };
 ctx.camera = createCamera(ctx);
@@ -102,7 +69,8 @@ function locationState() {
   const match = /^#\/([^/]+)\/(.+)$/.exec(location.hash);
   let address;
   try { address = decodeURIComponent(match?.[2] ?? root); } catch { address = root; }
-  const mode = readModes.has(match?.[1]) ? match[1] : firstRead;
+  if (match && !readModes.has(match[1])) return stateFor(firstRead, root, 'address');
+  const mode = match?.[1] ?? firstRead;
   if (!index.get(address)) return stateFor(firstRead, root, 'address');
   const remembered = history.state?.arkigo;
   if (remembered?.mode === mode && remembered.address === address && index.objects.has(remembered.viewId)) {
@@ -119,28 +87,22 @@ function saveHistory(replace = true, camera = ctx.camera.save()) {
 }
 
 function drawNavigation() {
-  const page = readModes.get(state.mode);
-  // A flow is part of the map. The pages without an entry of their own are opened from the map and lead back to it.
-  const entry = page.entry ? state.mode : state.mode === 'flow' ? 'map' : null;
-  for (const item of byId('readings').children) {
-    if (item.dataset.mode === entry) item.setAttribute('aria-current', 'page');
-    else item.removeAttribute('aria-current');
-  }
   const crumbs = byId('crumbs');
   crumbs.replaceChildren();
   const trail = index.pathTo(state.viewId).filter((object) => ['system', 'module', 'flow'].includes(object.type))
     .map((item, i) => ({ title: i === 0 ? input.design.title : item.title, open: () => returnTo(item.id) }));
-  if (!entry) trail.push({ title: page.label });
+  if (state.mode === 'inventory') trail.push({ title: readModes.get(state.mode).label });
   for (const [i, { title, open }] of trail.entries()) {
     if (i) crumbs.append(icon('right'));
     const last = i === trail.length - 1;
-    const crumb = last ? make('span', 'crumb', title) : button(title, open, 'crumb');
+    const crumb = button(title, last ? () => inspect(state.viewId) : open, 'crumb');
     crumb.title = title;
-    if (last) crumb.setAttribute('aria-current', 'location');
+    if (last) {
+      crumb.id = 'view-detail';
+      crumb.setAttribute('aria-current', 'location');
+    }
     crumbs.append(crumb);
   }
-  // At the top of the map the title already says where the reader is.
-  crumbs.hidden = trail.length < 2;
   crumbs.scrollLeft = crumbs.scrollWidth;
 }
 
@@ -156,23 +118,19 @@ function paintSelection() {
     edge.classList.toggle('edge-selected', edge.dataset.from === state.selected || edge.dataset.to === state.selected);
   }
   byId('world').classList.toggle('has-selection', onCard);
-  for (const item of document.querySelectorAll('#view-content [data-object], #view-facts [data-object]')) {
+  for (const item of document.querySelectorAll('#view-content [data-object]')) {
     if (item.dataset.object === state.selected) item.setAttribute('aria-current', 'true');
     else item.removeAttribute('aria-current');
   }
-  byId('selection').hidden = !selected || Boolean(state.detail) && narrowScreen.matches;
   byId('hint').textContent = scene?.hint ?? '';
   byId('hint').hidden = Boolean(selected) || !scene?.hint;
-  byId('selection-title').textContent = selected?.title ?? '';
-  byId('enter').hidden = !selected || !canEnter(selected.id);
-  byId('enter').textContent = selected?.type === 'flow' ? '查看流程' : '进入模块';
 }
 
 function paintDetail(focus = false) {
   const show = Boolean(state.detail);
   byId('reading').inert = show && narrowScreen.matches;
   document.querySelector('.topbar').inert = show && narrowScreen.matches;
-  document.querySelector('.location').inert = show && narrowScreen.matches;
+  detail.inert = !show;
   detail.hidden = !show;
   if (show && (renderedDetail !== state.detail || focus)) {
     const title = renderDetails(ctx, state.detail, () => closeDetail(true));
@@ -188,8 +146,6 @@ function render(camera = null, focus = false) {
   byId('world').hidden = !scene;
   byId('controls').hidden = !scene;
   byId('reset').hidden = byId('export').hidden = !scene?.draggable;
-  byId('view-detail').hidden = Boolean(readModes.get(state.mode).article);
-  // The path row comes and goes with the level, so it is drawn before the camera measures the canvas.
   drawNavigation();
   ctx.camera.setScene(scene, camera);
   if (!camera || state.detail) ctx.camera.reveal(scene?.cardsByAddress.get(state.selected)?.card);
@@ -200,7 +156,6 @@ function renderReading() {
   byId('view-content').onscroll = null;
   byId('view-content').replaceChildren();
   byId('view-content').hidden = true;
-  heading('', '');
   document.body.dataset.reading = state.mode;
   return readModes.get(state.mode).render(ctx);
 }
@@ -232,16 +187,13 @@ function navigate(mode, address, intent, options = {}) {
     const enclosing = scene?.cardsByAddress.get(options.via)?.card;
     ctx.camera.animateLevel(clone, oldScene, enclosing, ctx.camera.save(), false);
   }
-  announce('当前视图 ' + byId('view-title').textContent);
+  announce('当前视图 ' + byId('view-detail').textContent);
 }
 
 function select(address, showDetail = false) {
-  const oldCamera = ctx.camera.save();
   state = { ...state, address, selected: address, detail: showDetail ? address : null };
   paintDetail(showDetail);
-  const card = scene?.cardsByAddress.get(address)?.card;
-  ctx.camera.setScene(scene, oldCamera);
-  ctx.camera.reveal(card);
+  if (!showDetail) ctx.camera.reveal(scene?.cardsByAddress.get(address)?.card);
   paintSelection();
   saveHistory();
 }
@@ -252,15 +204,13 @@ function inspect(address) {
 
 function closeDetail(focus = false) {
   if (!state.detail) return;
-  const oldCamera = ctx.camera.save();
   state = { ...state, detail: null };
   paintDetail();
-  ctx.camera.setScene(scene, oldCamera);
   paintSelection();
   saveHistory();
-  if (focus) (scene?.cardsByAddress.get(state.selected)?.element ??
+  if (focus) ctx.camera.focusWithoutMoving(scene?.cardsByAddress.get(state.selected)?.element ??
     byId('view-content').querySelector('[data-object="' + state.selected + '"]') ??
-    byId('view-detail')).focus({ preventScroll: true });
+    byId('view-detail'));
 }
 
 function enter(address, before) {
@@ -311,31 +261,18 @@ function downloadLayout() {
 function restoreLocation() {
   const next = locationState();
   if (next.address === state.address && next.mode === state.mode && next.viewId === state.viewId &&
-      next.selected === state.selected && next.detail === state.detail) return;
+      next.selected === state.selected && next.detail === state.detail) {
+    if (location.hash !== addressHash(next.mode, next.address)) saveHistory();
+    return;
+  }
   navigate(next.mode, next.address, 'address', { saved: next, pop: true, focus: true });
+  if (location.hash !== addressHash(next.mode, next.address)) saveHistory();
 }
 
 function initialize() {
-  const project = byId('project-name');
-  project.textContent = project.title = input.design.title;
   document.title = input.design.title + ' · ArkiGo';
-  byId('rev').textContent = input.rev;
-  byId('rev').title = '最近变更';
-  byId('rev').onclick = () => navigate('changes', state.selected ?? state.viewId, 'switch');
-  byId('brand-icon').append(icon('module'));
-  for (const [mode, definition] of readModes) {
-    if (!definition.entry) continue;
-    const tab = button(undefined, () => {
-      if (mode !== state.mode) navigate(mode, state.selected ?? state.viewId, 'switch');
-    }, 'read-mode');
-    tab.dataset.mode = mode;
-    tab.append(icon(definition.icon), textNode(definition.label));
-    byId('readings').append(tab);
-  }
-  drawDecisionCount();
-  writeStorage(decisionKey, decisions);
   const toolIcons = {
-    'search-open': 'search', 'view-detail': 'info',
+    'search-open': 'search',
     'zoom-in': 'plus', 'zoom-out': 'minus', fit: 'fit', reset: 'reset', export: 'export'
   };
   for (const [id, glyph] of Object.entries(toolIcons)) {
@@ -345,9 +282,6 @@ function initialize() {
     tool.prepend(icon(glyph));
   }
   byId('search-open').onclick = ctx.directory.search;
-  byId('view-detail').onclick = () => inspect(state.viewId);
-  byId('inspect').onclick = () => inspect(state.selected);
-  byId('enter').onclick = () => enter(state.selected);
   byId('zoom-in').onclick = () => ctx.camera.zoom(1.22);
   byId('zoom-out').onclick = () => ctx.camera.zoom(1 / 1.22);
   byId('fit').onclick = ctx.camera.reset;

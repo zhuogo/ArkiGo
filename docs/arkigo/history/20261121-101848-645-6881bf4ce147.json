@@ -1,0 +1,64 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T10:18:48.645Z",
+  "by": "codex",
+  "reason": "发布 ArkiGo 2.1.0，独立安装验收以发布清单中的版本为准。",
+  "base": "b78e6f3964f4",
+  "result": "6881bf4ce147",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.install-test",
+      "fields": [
+        "body.then",
+        "summary"
+      ],
+      "before": {
+        "id": "practice.install-test",
+        "type": "acceptance",
+        "title": "独立安装与发布许可回归",
+        "summary": "两份许可证相同，安装副本携带许可证，版本为 2.0.0。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "系统临时目录内的新技能和新项目"
+          ],
+          "then": [
+            "两份许可证相同，安装副本携带许可证，版本为 2.0.0。",
+            "独立运行可建档、改设计、生成 HTML。"
+          ],
+          "when": "运行 core 安装用例，实际 install、npm ci、version、init、change 和 render"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "12 arity, duplicate flags, all exit codes and installer behavior"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-20T15:14:25.556Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/scripts/commands/install.mjs"
+            }
+          ],
+          "note": "core 安装用例通过；临时目录内 install 后 npm ci，再以独立副本执行 version、init、change、render、check 均成功。许可证逐字节相同。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

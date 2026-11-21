@@ -70,7 +70,7 @@ async function assertTouchTargets(page, selector, label) {
 for (const name of selected) {
   const open = (t, hash = '', options, url = clinicUrl) => openPage(t, browsers.get(name), url + hash, options);
 
-  test(`${name}: offline root, two entries, roles above the map, read-only snapshot, relation list`, async (t) => {
+  test(`${name}: offline roadmap has three regions and a read-only snapshot`, async (t) => {
     const { page, errors, requests } = await open(t);
     const initial = await state(page);
     assert.equal(initial.viewId, 'clinic');
@@ -78,14 +78,11 @@ for (const name of selected) {
     assert.equal(initial.cards.length, 5);
     const canvas = await page.locator('#viewport').boundingBox();
     for (const { id } of initial.cards) assert.ok(within(await card(page, id).boundingBox(), canvas), id);
-    assert.deepEqual(await page.locator('#readings button').evaluateAll((tabs) => tabs.map((tab) => tab.dataset.mode)),
-      ['map', 'decisions']);
-    assert.equal(await page.locator('#crumbs').isVisible(), false);
-    const people = page.locator('#view-facts .person');
-    assert.deepEqual(await people.allTextContents(), ['患者', '前台人员', '门诊医生']);
-    await people.first().click();
-    assert.equal((await state(page)).detail, 'patient');
-    await page.locator('#detail').getByRole('button', { name: '关闭详情' }).click();
+    assert.deepEqual(await page.locator('.topbar + #workspace #reading > *').evaluateAll((regions) =>
+      regions.map(({ id }) => id)), ['viewport', 'controls']);
+    assert.equal(await page.locator('#crumbs [aria-current]').innerText(), '青禾诊所');
+    assert.equal(await page.locator('#brand-icon, #rev, .view-heading, #readings, #controls #enter, #controls #inspect').count(), 0);
+    assert.doesNotMatch(await page.locator('#world').innerText(), /未核对|已实现|待实现|部分实现/);
     const clone = await page.evaluate(() => {
       const result = window.arkigoCanvas.getState();
       result.cards.pop();
@@ -101,7 +98,11 @@ for (const name of selected) {
   });
 
   test(`${name}: only main lines are drawn until a card is selected, a pair of cards shares one line`, async (t) => {
-    const url = await writePage(t, pageInput(createDense()));
+    const design = createDense();
+    for (const item of design.objects.filter(({ type }) => type === 'module')) {
+      item.group = ['a', 'c'].includes(item.id) ? '业务' : '服务';
+    }
+    const url = await writePage(t, pageInput(design));
     const { page, errors } = await open(t, '', undefined, url);
     const shown = () => page.locator('#world .graph-edge').evaluateAll((lines) => lines
       .filter((line) => getComputedStyle(line).visibility === 'visible')
@@ -111,40 +112,87 @@ for (const name of selected) {
     assert.match(await page.locator('#hint').innerText(), /主要关系/);
     const both = page.locator('#world .graph-edge[data-from="a"][data-to="b"]');
     assert.ok(await both.getAttribute('marker-start') && await both.getAttribute('marker-end'));
+    const label = page.locator('#world button.edge-label', { hasText: '×3' });
+    const hues = () => page.locator('#world .graph-edge').evaluateAll((lines) => {
+      const stroke = (line) => getComputedStyle(line).stroke;
+      return Object.fromEntries(lines.map((line) => [line.dataset.from + '/' + line.dataset.to, stroke(line)]));
+    });
+    const colorsMatch = () => label.evaluate((tag) => {
+      const world = document.querySelector('#world');
+      const path = [...world.querySelectorAll('.graph-edge')].find((line) =>
+        line.dataset.from === tag.dataset.from && line.dataset.to === tag.dataset.to);
+      const marker = world.querySelector(path.getAttribute('marker-end').slice(4, -1));
+      const stroke = getComputedStyle(path).stroke;
+      const expected = document.createElement('span');
+      const tint = tag.matches(':hover, :focus-visible, .edge-selected') ? 24 : 16;
+      expected.style.backgroundColor = 'color-mix(in srgb, ' + stroke + ' ' + tint + '%, transparent)';
+      world.append(expected);
+      const match = getComputedStyle(tag).backgroundColor === getComputedStyle(expected).backgroundColor &&
+        getComputedStyle(marker.firstElementChild).stroke === stroke;
+      expected.remove();
+      return match;
+    });
+    const light = await hues();
+    assert.equal(new Set(Object.values(light)).size, 6);
+    assert.ok(await colorsMatch());
+    await label.hover();
+    assert.match(await both.getAttribute('class'), /edge-emphasized/);
+    assert.ok(await colorsMatch());
+    await page.locator('#theme').click();
+    const dark = await hues();
+    assert.equal(new Set(Object.values(dark)).size, 6);
+    assert.notDeepEqual(dark, light);
+    assert.ok(await colorsMatch());
+    // Follow the same SVG path inside each partition and through the gap between their frames.
+    const partitions = await both.evaluate((line) => {
+      const zones = [...document.querySelectorAll('#world .graph-zone')];
+      const layer = getComputedStyle(line.ownerSVGElement);
+      if (layer.overflow !== 'visible' || zones.some((zone) =>
+        Number(getComputedStyle(zone).zIndex) >= Number(layer.zIndex))) return [];
+      const boxes = zones.map((zone) => ({ x: zone.offsetLeft, y: zone.offsetTop,
+        right: zone.offsetLeft + zone.offsetWidth, bottom: zone.offsetTop + zone.offsetHeight }));
+      const sequence = [];
+      for (let length = 0; length <= line.getTotalLength(); length += 2) {
+        const point = line.getPointAtLength(length);
+        const zone = boxes.findIndex(({ x, y, right, bottom }) =>
+          point.x > x && point.x < right && point.y > y && point.y < bottom);
+        if (sequence.at(-1) !== zone) sequence.push(zone);
+      }
+      return sequence;
+    });
+    assert.equal(partitions.length, 3);
+    assert.equal(partitions[1], -1);
+    assert.deepEqual([partitions[0], partitions[2]].sort(), [0, 1]);
     await card(page, 'a').click();
     assert.equal((await state(page)).detail, 'a');
     assert.deepEqual(await shown(), ['a/b', 'a/c', 'a/d', 'b/c', 'c/d']);
+    assert.deepEqual(await hues(), dark);
+    assert.ok(await colorsMatch());
     assert.equal(await page.locator('#hint').isVisible(), false);
-    await page.locator('#world button.edge-label', { hasText: '×3' }).click();
+    await label.click();
     assert.equal(await page.locator('#browse-title').innerText(), '模块 A 与 模块 B · 3 条关系');
     assert.equal(await page.locator('#browse-body .relation-row').count(), 3);
     assert.deepEqual(errors, []);
   });
 
-  test(`${name}: a click opens the details with what the block contains; it is entered from there`, async (t) => {
+  test(`${name}: a module shows its purpose and files and can be entered from the title`, async (t) => {
     const { page } = await open(t);
     await card(page, 'booking').click();
     assert.deepEqual({ selected: (await state(page)).selected, detail: (await state(page)).detail },
       { selected: 'booking', detail: 'booking' });
-    const inside = page.locator('#detail [data-field="children"]');
-    assert.deepEqual(await inside.locator('h3').allTextContents(), ['模块3', '规则1', '决策1']);
-    await inside.getByRole('link', { name: '名额扣减约束' }).click();
-    await page.waitForFunction(() => window.arkigoCanvas.getState().detail === 'capacity');
-    await page.goBack();
-    await waitForView(page, 'clinic', { detail: 'booking' });
-    await page.locator('#detail').getByRole('button', { name: '进入模块' }).click();
+    const detail = page.locator('#detail');
+    assert.deepEqual(await detail.locator('h3').allTextContents(), ['模块作用', '关联文件']);
+    assert.match(await detail.locator('[data-field="purpose"]').innerText(), /管理医生排班.*锁定号源并写入预约单/s);
+    assert.deepEqual(await detail.locator('.source-path').allTextContents(), ['src/booking/reserve.ts']);
+    assert.equal(await detail.locator('.detail-meta').count(), 0);
+    await detail.locator('.module-detail-title').getByRole('button', { name: '进入模块' }).click();
     await waitForView(page, 'booking');
     assert.equal(await page.locator('#crumbs').isVisible(), true);
-    const progress = page.locator('#view-facts .progress-fact');
-    assert.match(await progress.innerText(), /实现情况/);
-    await progress.click();
-    await waitForView(page, 'clinic', { mode: 'progress' });
-    assert.deepEqual(await page.locator('#crumbs .crumb').allTextContents(), ['青禾诊所', '进度']);
-    assert.equal(await page.locator('#readings [aria-current]').count(), 0);
-    await page.locator('#crumbs button').click();
+    assert.deepEqual(await page.locator('#crumbs .crumb').allTextContents(), ['青禾诊所', '预约服务']);
+    await page.locator('#view-detail').click();
+    assert.equal((await state(page)).detail, 'booking');
+    await page.locator('#crumbs button').first().click();
     await waitForView(page, 'clinic', { mode: 'map' });
-    await page.locator('#rev').click();
-    await waitForView(page, 'clinic', { mode: 'changes' });
   });
 
   test(`${name}: enter, breadcrumb and browser back/forward restore selection and camera`, async (t) => {
@@ -154,7 +202,7 @@ for (const name of selected) {
     await page.locator('#detail').getByRole('button', { name: '关闭详情' }).click();
     await page.locator('#viewport').press('ArrowLeft');
     const before = await state(page);
-    await page.locator('#enter').click();
+    await page.locator('#viewport').press('Enter');
     await waitForView(page, 'booking');
     assert.ok(page.url().endsWith('#/map/booking'));
     await page.goBack();
@@ -200,15 +248,27 @@ for (const name of selected) {
     assert.ok(within(await card(page, 'booking').boundingBox(), await page.locator('#viewport').boundingBox()));
   });
 
-  test(`${name}: docked details, cross-level references, relationships, and evidence links`, async (t) => {
+  test(`${name}: overlay details, cross-level references, relationships, and evidence links`, async (t) => {
     const url = await writePage(t, clinicInput({ editor: 'vscode', projectRoot: '/a project' }));
     const { page, errors } = await open(t, '#/map/appointment', {}, url);
     await waitForView(page, 'reserve', { detail: 'appointment' });
     const canvas = await page.locator('#viewport').boundingBox();
     const panel = await page.locator('#detail').boundingBox();
-    assert.ok(canvas.x + canvas.width <= panel.x);
+    assert.ok(canvas.x < panel.x && panel.x + panel.width <= canvas.x + canvas.width);
+    assert.equal(panel.y + panel.height, canvas.y + canvas.height);
+    const detail = page.locator('#detail');
+    assert.equal(await detail.evaluate((element) => getComputedStyle(element).scrollbarWidth), 'none');
+    assert.equal(await detail.getByText('已接受', { exact: true }).count(), 0);
+    const camera = (await state(page)).camera;
+    await detail.getByRole('button', { name: '关闭详情' }).click();
+    assert.deepEqual(await page.locator('#viewport').boundingBox(), canvas);
+    assert.deepEqual((await state(page)).camera, camera);
+    await card(page, 'appointment').click();
+    assert.deepEqual(await page.locator('#viewport').boundingBox(), canvas);
+    assert.deepEqual((await state(page)).camera, camera);
     assert.ok(within(await card(page, 'appointment').boundingBox(), canvas));
-    const statuses = await page.locator('#detail .evidence-status').allTextContents();
+    const statuses = await page.locator('#detail .evidence-row .check-status').evaluateAll((marks) =>
+      marks.map((mark) => mark.getAttribute('aria-label')));
     assert.deepEqual(statuses, ['正常', '正常']);
     const editorUrl = await page.locator('#detail .source-path').first().getAttribute('href');
     assert.match(editorUrl, /^vscode:\/\/file\/a%20project/);
@@ -222,7 +282,8 @@ for (const name of selected) {
     await waitForView(page, 'make-booking', { mode: 'flow', selected: 'make-booking#confirm' });
     await page.goto(url + '#/map/reserve-api');
     await waitForView(page, 'reserve', { detail: 'reserve-api' });
-    assert.deepEqual(await page.locator('#detail .evidence-status').allTextContents(), ['内容已变', '文件缺失', '未核对']);
+    assert.deepEqual(await page.locator('#detail .evidence-row .check-status').evaluateAll((marks) =>
+      marks.map((mark) => mark.getAttribute('aria-label'))), ['内容已变', '文件缺失', '待核对']);
     assert.deepEqual(errors, []);
   });
 
@@ -275,6 +336,31 @@ for (const name of selected) {
       [...document.querySelectorAll('#detail img')].every((image) => image.naturalWidth > 0));
   });
 
+  test(`${name}: panning and dragging never select canvas text or outline its edges`, async (t) => {
+    const { page } = await open(t, '#/map/reserve');
+    const viewport = page.locator('#viewport');
+    const box = await viewport.boundingBox();
+    const start = await state(page);
+    await page.mouse.move(box.x + 8, box.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 5, box.y + box.height - 5, { steps: 12 });
+    assert.equal(await viewport.evaluate((element) => getComputedStyle(element).outlineStyle), 'none');
+    assert.equal(await page.evaluate(() => getSelection().toString()), '');
+    await page.mouse.up();
+    assert.notDeepEqual((await state(page)).camera, start.camera);
+    await viewport.press('0');
+    const label = page.locator('#world .edge-label').first();
+    assert.equal(await label.evaluate((element) => getComputedStyle(element).userSelect), 'none');
+    const labelBox = await label.boundingBox();
+    await page.mouse.move(labelBox.x + labelBox.width / 2, labelBox.y + labelBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 8, box.y + 8, { steps: 10 });
+    await page.mouse.up();
+    assert.equal(await page.evaluate(() => getSelection().toString()), '');
+    await viewport.press('ArrowRight');
+    assert.equal(await viewport.evaluate((element) => getComputedStyle(element).outlineStyle), 'solid');
+  });
+
   test(`${name}: layout drag persists, exports version 2 and resets`, async (t) => {
     const { page } = await open(t, '#/map/reserve');
     const initial = await state(page);
@@ -306,12 +392,13 @@ for (const name of selected) {
     const { page } = await open(t, '', { viewport: mobile, hasTouch: true });
     const initial = await state(page);
     assert.equal(initial.direction, 'vertical');
-    assert.ok(await page.locator('#rev').isVisible());
+    assert.ok(await page.locator('#crumbs').isVisible());
     const titleSize = await page.locator('#world .card-title').first().evaluate((el) =>
       parseFloat(getComputedStyle(el).fontSize));
     assert.ok(titleSize * initial.camera.k >= 12);
     assert.ok(initial.cards.every((item) => item.x === initial.cards[0].x));
     await page.locator('#view-detail').tap();
+    await page.waitForFunction(() => !document.querySelector('#detail').getAnimations().length);
     assert.deepEqual(await page.locator('#detail').boundingBox(), { x: 0, y: 0, ...mobile });
     assert.ok(await page.locator('#reading').evaluate((el) => el.inert));
     await page.locator('#detail').getByRole('button', { name: '关闭详情' }).tap();
@@ -326,7 +413,7 @@ for (const name of selected) {
     const url = await writePage(t, clinicInput({ editor: 'vscode', projectRoot: '/a project' }));
     const panel = 'button, a[href]:not(.inline-reference), input';
     const on = (root) => `${root} :is(${panel})`;
-    const map = '.topbar button, .location button, .view-heading button, #controls button, #world button';
+    const map = '.topbar button, #controls button, #world button';
     for (const viewport of [mobile, { width: 320, height: 568 }]) {
       const { page } = await open(t, '', { viewport, hasTouch: true, isMobile: true }, url);
       const check = (selector, stage) => assertTouchTargets(page, selector, `${viewport.width} ${stage}`);
@@ -370,8 +457,8 @@ for (const name of selected) {
       await waitForView(page, 'booking');
       await card(page, 'schedule').focus();
       await card(page, 'schedule').tap();
-      await check(map, 'module with selected card');
-      await page.locator('#inspect').tap();
+      await waitForView(page, 'booking', { detail: 'schedule' });
+      assert.ok(await page.getByRole('button', { name: '进入模块' }).isVisible());
       await check(on('#detail'), 'module detail');
 
       await page.goto(url + '#/flow/make-booking');
@@ -395,10 +482,8 @@ for (const name of selected) {
     assert.equal(focused, 'booking');
     await page.keyboard.press('Enter');
     assert.equal((await state(page)).selected, 'booking');
-    await page.keyboard.press('i');
     assert.equal((await state(page)).detail, 'booking');
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: '进入模块' }).press('Enter');
     await waitForView(page, 'booking');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
     await page.keyboard.press('Escape');
@@ -421,7 +506,7 @@ for (const name of selected) {
   test('chromium: all object bodies and notes have typed detail content', async (t) => {
     const { page, errors } = await open(t);
     const records = {
-      clinic: ['system', 'audience'], patient: ['actor', 'goals'], booking: ['module', 'responsibilities'],
+      clinic: ['system', 'audience'], patient: ['actor', 'goals'], booking: ['module', 'purpose'],
       'make-booking': ['flow', 'steps'], capacity: ['rule', 'constraint'], appointment: ['entity', 'fields'],
       'reserve-api': ['interface', 'request'], 'slot-picker': ['screen', 'media'], 'last-slot': ['acceptance', 'then'],
       waitlist: ['decision', 'chosen']
@@ -488,7 +573,8 @@ for (const name of selected) {
         await card(page, literal.id).click();
         const detail = page.locator('#detail');
         assert.equal(await detail.locator('h2').textContent(), literal.title);
-        assert.equal(await detail.locator('.detail-head > p').textContent(), literal.summary);
+        const summary = literal.type === 'module' ? '[data-field="purpose"] p' : '.detail-head > p';
+        assert.equal(await detail.locator(summary).textContent(), literal.summary);
         assert.ok(await detail.evaluate((element) => element.scrollWidth <= element.clientWidth));
         assert.equal(await page.evaluate(() => window.intruded), undefined);
         assert.equal(await detail.locator('script').count(), 0);

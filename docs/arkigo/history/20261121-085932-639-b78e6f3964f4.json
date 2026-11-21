@@ -1,0 +1,653 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T08:59:32.639Z",
+  "by": "codex",
+  "reason": "精简模块详情并回写实现与验收",
+  "base": "01f6ff784dd7",
+  "result": "b78e6f3964f4",
+  "changes": [
+    {
+      "op": "update",
+      "id": "model.markup",
+      "fields": [
+        "body.constraint",
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "model.markup",
+        "type": "rule",
+        "title": "内容使用有限标记",
+        "summary": "正文和说明只识别粗体、行内代码与对象引用，图片从设计资产目录加载。",
+        "parent": "model",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "constraint": "正文与说明支持粗体、行内代码与对象和流程步骤引用，其他字符串不按 HTML 或脚本执行。地图卡片会对标题和摘要做纯文本投影，详情标题也如此；查找、清单和变更里的标题保留原文。",
+          "when": "呈现正文或说明时"
+        },
+        "notes": [
+          {
+            "columns": [
+              "说明块",
+              "字段"
+            ],
+            "rows": [
+              [
+                "text",
+                "text"
+              ],
+              [
+                "list",
+                "items、ordered"
+              ],
+              [
+                "table",
+                "columns、rows"
+              ],
+              [
+                "code",
+                "text、lang"
+              ],
+              [
+                "image",
+                "path、caption"
+              ],
+              [
+                "callout",
+                "tone（info 或 warn）、text"
+              ]
+            ],
+            "type": "table"
+          },
+          {
+            "text": "块可带 title。图片和 screen.media 的路径相对设计下的 assets。引用使用双方括号包住 ID，可在竖线后指定显示文字；流程步骤在对象 ID 后用井号接步骤 ID。仅在行内代码和代码块中展示字面用法时，要留意校验器对文本的引用扫描。",
+            "type": "text"
+          },
+          {
+            "text": "标题和摘要的处理在不同读法中有差异，统一口径见 [[model.title-markup]]。",
+            "tone": "warn",
+            "type": "callout"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、4.4 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/inline.mjs",
+            "symbol": "references、strings"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/details.js",
+            "symbol": "内容块和正文呈现"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/markdown.mjs",
+            "symbol": "prose、objectMarkdown"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "4fa2067851f942190ea0d166486cc30973a490fd71ea51163649a1cf33a6b915",
+              "path": "skills/arkigo/scripts/lib/inline.mjs",
+              "symbol": "references、strings"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "0e6a8c335b6fe54ce1e877f1517893387da983fe352d308da8aa8258a66834f0",
+              "path": "skills/arkigo/assets/graph.js",
+              "symbol": "graphCard"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "69fb7e61ff69bf307328391e420b2e9c78b47f9f944c300a5503f275fa3d3a87",
+              "path": "skills/arkigo/assets/details.js",
+              "symbol": "renderDetails、inlinePlain"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.detail",
+      "fields": [
+        "body.purpose",
+        "implementation.evidence",
+        "implementation.note"
+      ],
+      "before": {
+        "id": "viewer.detail",
+        "type": "screen",
+        "title": "对象详情",
+        "summary": "模块详情聚焦作用和关联文件，其他对象保留结构化内容。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "elements": [
+            "模块详情显示模块作用与关联文件。作用取摘要和补充职责，文件合并实现依据与文件来源并按路径去重，保留符号与复制路径。有下级时，标题旁的箭头进入模块。",
+            "请求、响应、字段和错误用表格，数据展示状态图，验收按给定、当、那么排列，决策列选项与结论。支持媒体和六种说明块。",
+            "其他对象的下级按类型分组并标数量，可逐个打开。查看流程的动作在流程详情中。",
+            "其他对象详情按类型列关系；关系目标和行内引用可跳转。依据核对情况以图标显示，可复制文件路径。",
+            "生成时启用编辑器才提供编辑器链接。",
+            "详情标题区省略「已接受」标记。"
+          ],
+          "purpose": "从摘要进入依据、规则和接口细节。",
+          "route": "当前读法中的对象详情",
+          "states": [
+            "桌面详情从右侧滑入并覆盖画布，画布的位置和视口尺寸保持稳定。窄屏详情覆盖阅读区。隐藏滚动条，内容仍可滚动；键盘可关闭并恢复焦点，减少动态效果模式直接显示详情。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.3 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/details.js",
+            "symbol": "renderDetails、appendEvidence、bodyContent"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render、navigate、initialize"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.css",
+            "symbol": "主题、窄屏与减少动态效果"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 接手时读到的用户留言：文档没必要，文档应该是某个板块点击之后的详情"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户反馈右侧详情弹出时画布生硬左移，要求改进过渡和滚动条显示。"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求模块详情只聚焦模块作用和关联文件，方便 AI 定位。"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "69fb7e61ff69bf307328391e420b2e9c78b47f9f944c300a5503f275fa3d3a87",
+              "path": "skills/arkigo/assets/details.js",
+              "symbol": "renderDetails, appendEvidence"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "drawNavigation, navigate, select"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "07f79e80216319dc81f0c8420a672b45410a726685a7ed2b880eb099804e4ef7",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "画布选取、焦点和导航样式"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "e63e4854cf29d538f569e9f5822e7a4eaccc1d50bec6a0564e4dae76bf4586fd",
+              "path": "skills/arkigo/assets/camera.js",
+              "symbol": "focusWithoutMoving"
+            }
+          ],
+          "note": "详情在桌面覆盖画布、窄屏覆盖页面。指针打开时滑入，键盘操作和减少动态效果直接显示。滚动条隐藏，内容仍可滚动，开合时保留画布和缩放。",
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.flow",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "viewer.flow",
+        "type": "screen",
+        "title": "流程",
+        "summary": "显示步骤图、条件、角色、失败提示及步骤级规则和验收。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "elements": [
+            "从地图上的流程卡片或详情里的「查看流程」进入，自动分层排列，起终点和角色用标记表达；地址不指向流程时列出可选流程。",
+            "分支线显示条件；步骤的失败处理、规则与验收数量可从步骤打开。",
+            "连线与箭头用可区分的颜色，关系和条件标签使用对应线色的半透明底。",
+            "连线离开和接入卡片时优先留出一段直线再转弯，空间紧时可提前转弯。"
+          ],
+          "purpose": "读一件事从触发到结果怎样走。",
+          "route": "#/flow/<流程ID>",
+          "states": [
+            "没有流程时显示「暂无流程」；未进入时显示「选择流程」。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.2 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/flow.js",
+            "symbol": "registerRead 的 render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/layout.mjs",
+            "symbol": "layoutMap、layoutFlow"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/graph.js",
+            "symbol": "graphCard、renderGraph"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "c97640013b7de3ad9bed742181ee60f574fefd714ec792826f48123d4c8b436d",
+              "path": "skills/arkigo/assets/readings/flow.js",
+              "symbol": "registerRead 的 render"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "ac7fa3c9eec1bc7d3cab72de3165fa9af608b72ded388bdf2ba8057bb4606515",
+              "path": "skills/arkigo/assets/layout.mjs",
+              "symbol": "layoutFlow"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "0e6a8c335b6fe54ce1e877f1517893387da983fe352d308da8aa8258a66834f0",
+              "path": "skills/arkigo/assets/graph.js",
+              "symbol": "graphCard、renderGraph"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "69fb7e61ff69bf307328391e420b2e9c78b47f9f944c300a5503f275fa3d3a87",
+              "path": "skills/arkigo/assets/details.js",
+              "symbol": "renderDetails"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "07f79e80216319dc81f0c8420a672b45410a726685a7ed2b880eb099804e4ef7",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "连线和条件标签"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "8631081f2e02a7a0cd71cd6ed88fa1702e8af155d9e55a4dd7d856cc98b137d0",
+              "path": "skills/arkigo/assets/routing.mjs",
+              "symbol": "routeConnection、roundedPath"
+            }
+          ],
+          "note": "步骤图复用共享走线渲染。条件标签使用对应线色的半透明底。 首尾转弯优先与卡片保持距离。",
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.map",
+      "fields": [
+        "body.elements",
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "viewer.map",
+        "type": "screen",
+        "title": "地图",
+        "summary": "按一层归属看卡片、分区和主要关系；选中一张卡片再看它的全部关系。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "elements": [
+            "系统和模块只显示直接下级。模块、流程、数据、接口、界面成卡；角色可以从查找或详情打开，本层没有别的卡片时才成卡。规则、验收、决策在所属对象的详情中阅读。",
+            "主界面采用顶栏、画布和底栏。画布内禁止原生文本选取和拖拽，卡片拖动和画布平移由应用管理。",
+            "有实现依据且生成时全部核对一致的卡片显示带勾圆圈，其余显示虚线圆圈。",
+            "按分组或类型分区；宽屏分区并排，放不下换行。自动排版按主要关系分层，同一输入位置稳定，手动位置保存在浏览器并可导出。",
+            "关系合并到当前层可见卡片，标签可以打开原关系。连线采用圆滑转角，在卡片间选择较短的通路，可跨分区和不同归属分支。分区边框只作视觉分组，连线和标签可以跨过边框。线多于卡片时默认只画主要关系，选中后突出有关连线，同时保留其他主线和标签的可读性。 连线与箭头用可区分的颜色，关系和条件标签使用对应线色的半透明底。 连线离开和接入卡片时优先留出一段直线再转弯，空间紧时可提前转弯。",
+            "在宽屏和窄屏单击卡片均打开详情。模块详情的标题旁提供进入箭头，流程详情提供查看流程。双击和画布缩放导航也可进入，顶栏路径和缩小可返回。底栏提供缩放、适应、布局重置及导出。"
+          ],
+          "purpose": "项目负责人先看组成；维护者进入一个模块找流程、接口及关系。",
+          "route": "#/map/<对象ID>",
+          "states": [
+            "无卡片时显示空层，可以点击顶栏当前路径查看本层详情。",
+            "使用指针平移或拖动卡片时，画布边缘不显示焦点轮廓。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.1 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/map.js",
+            "symbol": "registerRead 的 render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/model.mjs",
+            "symbol": "indexDesign、projectRelations"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/layout.mjs",
+            "symbol": "layoutMap、layoutFlow"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/camera.js",
+            "symbol": "createCamera"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render、navigate、initialize"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 接手时读到的用户留言：1.0 更清晰；同意地图照 1.0 重画的方案（卡片正常大小，默认只画主线，选中再看其他关系）"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/graph.js",
+            "symbol": "graphCard, renderGraph"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/dom.js",
+            "symbol": "codeCheckMark"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.css",
+            "symbol": "画布选取、焦点和导航样式"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求软化走线、提高可读性，允许跨图层和分区走线。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/routing.mjs",
+            "symbol": "routeConnection、roundedPath、placeConnectionLabel"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求用不同线色和同色半透明标签区分密集连线。"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户建议延长卡片附近的连线转弯距离或增加分区内边距，并委托选择。"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "0e6a8c335b6fe54ce1e877f1517893387da983fe352d308da8aa8258a66834f0",
+              "path": "skills/arkigo/assets/graph.js",
+              "symbol": "graphCard、renderGraph"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "e63e4854cf29d538f569e9f5822e7a4eaccc1d50bec6a0564e4dae76bf4586fd",
+              "path": "skills/arkigo/assets/camera.js",
+              "symbol": "createCamera"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "fd68025c0ee9a23458b9f25641a20841fb45b07d0a0e0b1058b0debdeefc0c6a",
+              "path": "skills/arkigo/assets/readings/map.js",
+              "symbol": "地图读法的 render"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "drawNavigation、navigate、select"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "e3310f6b69ffd759502803a43e0ab902b8506546f56adcff1e69a30db0420109",
+              "path": "skills/arkigo/assets/dom.js",
+              "symbol": "codeCheckMark"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "07f79e80216319dc81f0c8420a672b45410a726685a7ed2b880eb099804e4ef7",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "画布、分区与连线样式"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "8631081f2e02a7a0cd71cd6ed88fa1702e8af155d9e55a4dd7d856cc98b137d0",
+              "path": "skills/arkigo/assets/routing.mjs",
+              "symbol": "routeConnection、roundedPath、placeConnectionLabel"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "c13c7db280eaec3e7b446f3f1ee8dd0195fbf04cef51b5e9f23e736519693feb",
+              "path": "skills/arkigo/assets/model.mjs",
+              "symbol": "projectRelations"
+            }
+          ],
+          "note": "分区边框仅作视觉分组，走线可穿过边框或经过分区外。箭头和半透明标签使用与连线对应的色调，悬停或键盘聚焦标签时，对应连线加粗并显示在其他线前面。 走线优先在卡片与首尾拐点之间留 28 个画布像素，转角圆滑后保留可见的直线段，狭窄通路可以缩短这段距离。",
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.navigation",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "viewer.navigation",
+        "type": "screen",
+        "title": "入口、查找与窄屏导航",
+        "summary": "在顶栏查看路径、打开当前层详情、查找对象和切换主题。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "elements": [
+            "顶栏路径与项目名合并，点击上级返回，点击当前层打开其详情。",
+            "查找面板搜索 ID、标题、摘要、正文、说明和依据，显示归属路径并可跳转。空查询时展示归属树及清单入口。 归属树省略「已接受」标记。",
+            "换页保留对象定位，地址可分享，流程步骤也可定位。",
+            "宽度不超过 760px 时地图和流程竖排，详情占满屏幕。主题默认跟随系统，手动设置保存在浏览器。"
+          ],
+          "purpose": "按词、归属、内容或链接找到同一对象。",
+          "route": "#/<读法>/<对象ID>",
+          "states": [
+            "尊重减少动态效果偏好；使用键盘可阅读和导航。",
+            "窄屏初始比例的卡片字号目标至少 12px。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8、8.9、8.10 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render、navigate、initialize"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/directory.js",
+            "symbol": "createDirectory"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/search.mjs",
+            "symbol": "buildSearchIndex、searchDesign"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.css",
+            "symbol": "主题、窄屏与减少动态效果"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 接手时读到的用户留言：同意搜索和目录合成一个、进度和变更不占入口的方案"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.html",
+            "symbol": "顶栏、画布、底栏"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "drawNavigation, navigate, select"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "b6c0e6697ea0a4f62b6e852a4d7a8e9573210492bee905d766647257ea90084e",
+              "path": "skills/arkigo/assets/directory.js",
+              "symbol": "createDirectory"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "bf79ffc877bf003c20101e9f8060846d18a4f8958931a68f568e212b69d9f510",
+              "path": "skills/arkigo/assets/page.html",
+              "symbol": "顶栏、画布、底栏"
+            },
+            {
+              "checkedAt": "2026-11-21T08:51:23.472Z",
+              "hash": "07f79e80216319dc81f0c8420a672b45410a726685a7ed2b880eb099804e4ef7",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "画布选取、焦点和导航样式"
+            }
+          ],
+          "note": "顶栏仅显示路径、查找和主题。查找的归属树和详情省略已接受标记，其他设计状态仍显示。版本保留在页面数据中。",
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.note"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从文件打开路线图，验证导航、详情、画布拖动与核对图标。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "桌面与窄屏离线页面，含跨层关系、长内容及不同的代码依据状态"
+          ],
+          "then": [
+            "顶栏、画布与底栏可用，详情操作从对象进入，旧拍板、进度及变更地址回到地图。",
+            "拖动画布不选中文字，指针操作不显示画布焦点轮廓，键盘仍可导航。",
+            "核对图标遵循代码依据快照，地图、流程、查找、清单、主题和布局交互通过回归。",
+            "跨分区、跨层投影和绕行卡片的走线保持可见，转角圆滑，选中后仍可辨认其他主线。",
+            "连线可以从分区内部穿过边框并连续显示，跨分区的关系标签仍可打开原关系。",
+            "浅色和深色模式下，不同连线可用颜色区分，标签底色与相应连线对应，选中后颜色保持对应。",
+            "在有足够空间的绕行中，首尾转角与卡片保持间距。",
+            "顶栏省略设计版本号，查找的归属树和对象详情省略「已接受」标记。",
+            "详情开合时画布的视口尺寸、位置和缩放保持稳定；详情支持滚动及减少动态效果。",
+            "模块详情展示作用及合并去重后的关联文件，可以复制文件路径，通过标题旁的箭头进入模块。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/page.test.mjs"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T08:51:57.070Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test 共 162 项通过。另用 Chromium 和 WebKit 验证归藏路线图的指针滑入、减少动态效果、隐藏滚动条时仍可滚动、详情开合时视口与画布状态稳定，以及右侧卡片双击。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

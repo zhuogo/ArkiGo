@@ -1,6 +1,5 @@
 registerRead('flow', {
   label: '流程',
-  icon: 'flow',
   resolve(ctx, address, intent) {
     const object = ctx.index.get(address);
     const flow = object.type === 'step' ? ctx.index.get(object.parent) : object;
@@ -12,7 +11,6 @@ registerRead('flow', {
   render(ctx) {
     const flow = ctx.index.get(ctx.viewId);
     if (flow.type !== 'flow') {
-      ctx.heading('流程', '');
       const list = make('ul', 'flow-index');
       for (const item of ctx.design.objects.filter((object) => object.type === 'flow')) {
         const entry = make('li');
@@ -23,7 +21,6 @@ registerRead('flow', {
       showSceneEmpty(list.children.length ? '选择流程' : '暂无流程', list.children.length ? list : null);
       return null;
     }
-    ctx.heading(flow.title, flow.summary);
     const plan = layoutFlow(flow.body, { direction: ctx.direction, availableWidth: ctx.availableWidth });
     const records = new Map();
     const annotations = new Map();

@@ -6,13 +6,13 @@ const readClinic = (name) => JSON.parse(readFileSync(new URL(name + '.json', cli
 
 export function pageInput(design, extra = {}) {
   return {
-    design, rev: revision(design), layout: null, history: [], evidence: {},
-    designDir: 'docs/arkigo', generatedAt: '2026-11-20T09:00:00Z', editor: null, ...extra
+    design, rev: revision(design), layout: null, evidence: {},
+    generatedAt: '2026-11-20T09:00:00Z', editor: null, ...extra
   };
 }
 
 export function clinicInput(extra = {}) {
   return pageInput(readClinic('design'), {
-    history: readClinic('history'), evidence: readClinic('evidence'), ...extra
+    evidence: readClinic('evidence'), ...extra
   });
 }

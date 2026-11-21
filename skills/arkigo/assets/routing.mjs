@@ -1,13 +1,15 @@
 const portVectors = { left: [-1, 0], right: [1, 0], top: [0, -1], bottom: [0, 1] };
 const midpoint = (a, b) => (a + b) / 2;
+const cornerRadius = 20;
+const preferredLead = 28;
 
-function port(card, side, offset) {
+function port(card, side, offset, clearance) {
   const [x, y] = portVectors[side];
   const point = {
     x: card.x + card.width * (x + 1) / 2 + (y ? offset : 0),
     y: card.y + card.height * (y + 1) / 2 + (x ? offset : 0)
   };
-  return [point, { x: point.x + x * 8, y: point.y + y * 8 }];
+  return [point, { x: point.x + x * clearance, y: point.y + y * clearance }];
 }
 
 export function segmentHitsBox(a, b, box) {
@@ -28,8 +30,10 @@ function simplifyRoute(points) {
     const previous = result.at(-1);
     if (previous?.x === point.x && previous.y === point.y) continue;
     const earlier = result.at(-2);
-    if ((earlier?.x === point.x && previous.x === point.x) ||
-        (earlier?.y === point.y && previous.y === point.y)) result.pop();
+    if ((earlier?.x === point.x && previous.x === point.x && (previous.y - earlier.y) * (point.y - previous.y) > 0) ||
+        (earlier?.y === point.y && previous.y === point.y && (previous.x - earlier.x) * (point.x - previous.x) > 0)) {
+      result.pop();
+    }
     result.push(point);
   }
   return result;
@@ -64,59 +68,108 @@ function gridRoute(start, end, cards, clear) {
   }
 }
 
-export function routeConnection(from, to, cards, vertical, back, lane = 0) {
+function findRoute(from, to, cards, vertical, back, lane, clearance) {
   const obstacles = cards.map(({ x, y, width, height }) =>
-    ({ x: x - 5, y: y - 5, width: width + 10, height: height + 10 }));
+    ({ x: x - clearance, y: y - clearance, width: width + 2 * clearance, height: height + 2 * clearance }));
   const clear = (a, b) => !obstacles.some((box) => segmentHitsBox(a, b, box));
   const forward = vertical ? ['bottom', 'top'] : ['right', 'left'];
   const returnSide = vertical ? 'right' : 'top';
-  const pairs = back
-    ? [[returnSide, from === to ? forward[1] : returnSide], forward]
-    : [forward, ['bottom', 'top'], ['top', 'bottom'], ['right', 'left'], ['left', 'right']];
-  const candidates = [];
-  const detours = [];
+  const preferred = back ? [returnSide, from === to ? forward[1] : returnSide] : forward;
+  const sides = Object.keys(portVectors);
+  const pairs = [preferred, ...sides.flatMap((a) => sides
+    .filter((b) => (from !== to || a !== b) && (a !== preferred[0] || b !== preferred[1]))
+    .map((b) => [a, b]))];
+  const outside = Math.abs(lane) / 2 + 8;
+  const left = Math.min(...obstacles.map((box) => box.x)) - outside;
+  const right = Math.max(...obstacles.map((box) => box.x + box.width)) + outside;
+  const top = Math.min(...obstacles.map((box) => box.y)) - outside;
+  const bottom = Math.max(...obstacles.map((box) => box.y + box.height)) + outside;
+  const entrances = [];
+  let best;
+  let bestScore = Infinity;
   for (const [fromSide, toSide] of pairs) {
-    const [a, start] = port(from, fromSide, lane);
-    const [b, end] = port(to, toSide, from === to ? -lane : lane);
+    const [a, start] = port(from, fromSide, lane, clearance);
+    const [b, end] = port(to, toSide, from === to ? -lane : lane, clearance);
     if (cards.some((card) => card !== from && segmentHitsBox(a, start, card)) ||
         cards.some((card) => card !== to && segmentHitsBox(end, b, card))) continue;
-    const right = (vertical ? Math.max(from.x + from.width, to.x + to.width)
-      : Math.max(...cards.map((card) => card.x + card.width))) + 26 + lane / 2;
-    const top = (vertical ? Math.min(from.y, to.y) : Math.min(...cards.map((card) => card.y))) - 24 - lane / 2;
-    const mx = midpoint(start.x, end.x) + lane;
-    const my = midpoint(start.y, end.y) + lane;
+    const sideCost = (Number(fromSide !== preferred[0]) + Number(toSide !== preferred[1])) * (back ? 18 : 8);
+    const minimum = Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + sideCost;
+    if (minimum >= bestScore) continue;
+    entrances.push({ a, start, end, b, sideCost });
     const viaX = (x) => [start, { x, y: start.y }, { x, y: end.y }, end];
     const viaY = (y) => [start, { x: start.x, y }, { x: end.x, y }, end];
-    // A line that leaves sideways turns in the gap beside the card, one that leaves up or down in the gap below.
-    const sideways = back ? !vertical : Boolean(portVectors[fromSide][0]);
-    const inner = sideways ? [viaX(mx), viaY(my)] : [viaY(my), viaX(mx)];
-    const outer = vertical ? [viaX(right), viaY(top)] : [viaY(top), viaX(right)];
-    const elbows = [viaX(start.x), viaY(start.y)];
-    const straight = !back && (start.x === end.x || start.y === end.y) ? [[start, end]] : [];
-    const passes = (points) => points.every((p, i) => !i || clear(points[i - 1], p));
-    // A forward line goes around the whole drawing only when no pair of sides connects directly.
-    const direct = (back ? [...outer, ...inner, ...elbows] : [...straight, ...inner, ...elbows]).find(passes);
-    if (direct) return simplifyRoute([a, ...direct, b]);
-    const detour = back ? undefined : outer.find(passes);
-    if (detour) detours.push(simplifyRoute([a, ...detour, b]));
-    candidates.push({ a, start, end, b });
+    const [fromX, fromY] = portVectors[fromSide];
+    const [toX, toY] = portVectors[toSide];
+    const xs = [midpoint(start.x, end.x) + lane, start.x, end.x,
+      a.x + fromX * preferredLead, b.x + toX * preferredLead, left, right];
+    const ys = [midpoint(start.y, end.y) + lane, start.y, end.y,
+      a.y + fromY * preferredLead, b.y + toY * preferredLead, top, bottom];
+    const minX = Math.min(start.x, end.x), maxX = Math.max(start.x, end.x);
+    const minY = Math.min(start.y, end.y), maxY = Math.max(start.y, end.y);
+    for (const card of obstacles) {
+      if (minX < card.x + card.width && maxX > card.x) {
+        ys.push(card.y, card.y + card.height);
+      }
+      if (minY < card.y + card.height && maxY > card.y) {
+        xs.push(card.x, card.x + card.width);
+      }
+    }
+    for (const route of [...new Set(xs)].map(viaX).concat([...new Set(ys)].map(viaY))) {
+      if (!route.every((point, i) => i === 0 || clear(route[i - 1], point))) continue;
+      const points = simplifyRoute([a, ...route, b]);
+      const score = routeScore(points, sideCost);
+      if (score < bestScore) {
+        best = points;
+        bestScore = score;
+      }
+    }
   }
-  if (detours.length) return detours[0];
-  for (const { a, start, end, b } of candidates) {
+  if (best) return best;
+  for (const { a, start, end, b } of entrances) {
     const points = gridRoute(start, end, obstacles, clear);
     if (points) return simplifyRoute([a, ...points, b]);
   }
 }
 
-export function roundedPath(points) {
+function routeScore(points, sideCost) {
+  let score = sideCost + (points.length - 2) * 24;
+  for (let i = 1; i < points.length; i++) {
+    const length = Math.abs(points[i].x - points[i - 1].x) + Math.abs(points[i].y - points[i - 1].y);
+    score += length;
+    // Tight passages remain usable, but a bend against a card loses to a little extra length.
+    if (points.length > 2 && (i === 1 || i === points.length - 1)) {
+      score += 4 * Math.max(0, preferredLead - length);
+    }
+  }
+  return score;
+}
+
+export function routeConnection(from, to, cards, vertical, back, lane = 0) {
+  return findRoute(from, to, cards, vertical, back, lane, 12) ??
+    findRoute(from, to, cards, vertical, back, lane, 2);
+}
+
+export function roundedPath(points, cards) {
   let path = 'M' + points[0].x + ',' + points[0].y;
   for (let i = 1; i < points.length; i++) {
     const p = points[i];
     const next = points[i + 1];
     if (!next) return path + ' L' + p.x + ',' + p.y;
     const previous = points[i - 1];
-    const radius = Math.min(4, Math.hypot(p.x - previous.x, p.y - previous.y) / 2,
+    let radius = Math.min(cornerRadius, Math.hypot(p.x - previous.x, p.y - previous.y) / 2,
       Math.hypot(next.x - p.x, next.y - p.y) / 2);
+    // The quadratic stays within 1/4 of its radius from at least one leg of the corner.
+    // Reduce the radius where a tight route leaves less clearance than that.
+    const legs = [previous, next].map(({ x, y }) => [Math.sign(x - p.x), Math.sign(y - p.y)]);
+    const [dx, dy] = [legs[0][0] + legs[1][0], legs[0][1] + legs[1][1]];
+    if (dx && dy) {
+      for (const card of cards) {
+        const nearX = dx > 0 ? card.x - p.x : p.x - card.x - card.width;
+        const nearY = dy > 0 ? card.y - p.y : p.y - card.y - card.height;
+        if (nearX >= radius || nearY >= radius || nearX + card.width <= 0 || nearY + card.height <= 0) continue;
+        radius = Math.min(radius, Math.max(nearX, nearY, 4 * Math.min(nearX, nearY), 0));
+      }
+    }
     const round = (neighbor) => (p.x + Math.sign(neighbor.x - p.x) * radius) + ',' +
       (p.y + Math.sign(neighbor.y - p.y) * radius);
     path += ' L' + round(previous) + ' Q' + p.x + ',' + p.y + ' ' + round(next);
@@ -124,7 +177,8 @@ export function roundedPath(points) {
   return path;
 }
 
-export function placeConnectionLabel(points, width, height, cards, occupied, bounds, vertical, separate = false) {
+export function placeConnectionLabel(points, width, height, cards, occupied, bounds, vertical, separate = false,
+  routes = [points]) {
   const candidates = [];
   for (let i = 1; i < points.length; i++) {
     const [a, b] = points.slice(i - 1, i + 1);
@@ -140,8 +194,11 @@ export function placeConnectionLabel(points, width, height, cards, occupied, bou
         const label = { x, y, width, height };
         const collisions = cards.filter((card) => overlaps(card, label)).length * 10000 +
           occupied.filter((other) => overlaps(other, label)).length * 1000;
+        const crossesLine = routes.some((route) => route.some((point, j) =>
+          j > 0 && segmentHitsBox(route[j - 1], point, label)));
         const overflow = vertical ? Math.max(0, bounds.x - x, x + width - bounds.x - bounds.width) : 0;
-        candidates.push({ ...label, collisions, score: length - collisions - overflow * 100 });
+        candidates.push({ ...label, collisions, score: Math.min(length, 240) - collisions -
+          (crossesLine ? 250 : 0) - overflow * 100 });
       }
     }
   }

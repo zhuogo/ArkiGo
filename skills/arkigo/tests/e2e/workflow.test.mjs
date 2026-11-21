@@ -14,24 +14,24 @@ const read = async path => JSON.parse(await readFile(path, 'utf8'));
 const point = ({ x, y }) => ({ x, y });
 const snapshot = async path => ({ bytes: await readFile(path), mtime: (await stat(path, { bigint: true })).mtimeNs });
 
-test('01 init creates an offline page whose visible title and revision match query', async t => {
+test('01 init creates an offline page with a visible title and an embedded revision', async t => {
   const area = await project(t);
   const init = await area.init();
   assert.deepEqual(init.page, { ok: true, path: 'docs/arkigo/index.html' });
   const { page, errors, requests } = await openPage(t, browser, area.html);
   const query = await area.run(['query']);
   assert.equal(await page.title(), '邻里下单 · ArkiGo');
-  assert.equal(await page.locator('#project-name').innerText(), query.project.title);
-  assert.equal(await page.locator('#rev').innerText(), query.rev);
+  assert.equal(await page.locator('#view-detail').innerText(), query.project.title);
+  assert.doesNotMatch(await page.locator('.topbar').innerText(), new RegExp(query.rev));
+  assert.equal((await data(page)).rev, query.rev);
   assert.equal(query.rev, init.rev);
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, []);
 });
 
-test('02 change regenerates deep links, relations, revision and embedded history', async t => {
+test('02 change regenerates deep links, relations and revision', async t => {
   const area = await project(t);
   await area.init();
-  const previous = await area.change([update('shop', { summary: '邻里下单说明' })]);
   const relations = [
     { from: 'place-order', to: 'order', type: 'writes' },
     { from: 'place-order#confirm', to: 'one-pickup', type: 'governed_by' },
@@ -47,11 +47,11 @@ test('02 change regenerates deep links, relations, revision and embedded history
   ]);
   assert.deepEqual(result.page, { ok: true, path: 'docs/arkigo/index.html' });
   const { page, navigate } = await openPage(t, browser, area.html, '#/map/checkout');
-  assert.equal(await page.locator('#view-title').innerText(), '结算服务');
+  assert.equal(await page.locator('#view-detail').innerText(), '结算服务');
   await page.locator('#view-detail').click();
   assert.match(await page.locator('#detail').innerText(), /生成订单/);
   await navigate('#/flow/place-order');
-  assert.equal(await page.locator('#view-title').innerText(), '提交订单');
+  assert.equal(await page.locator('#view-detail').innerText(), '提交订单');
   assert.match(await page.locator('#world').innerText(), /确认下单/);
   await navigate('#/map/order');
   assert.equal(await page.locator('#detail-title').innerText(), '订单记录');
@@ -60,10 +60,10 @@ test('02 change regenerates deep links, relations, revision and embedded history
   await navigate('#/map/one-pickup');
   assert.equal(await page.locator('#detail-title').innerText(), '自提规则');
   assert.match(await page.locator('#detail').innerText(), /每单限一个自提点/);
-  assert.equal(await page.locator('#rev').innerText(), result.rev);
   const input = await data(page);
+  assert.equal(input.rev, result.rev);
   assert.deepEqual(input.design.relations, relations);
-  assert.deepEqual(input.history, await Promise.all([result, previous].map(row => read(join(area.root, row.history)))));
+  assert.equal(Object.hasOwn(input, 'history'), false);
 });
 
 test('03 dry runs, no-ops and validation failures preserve published files', async t => {
@@ -91,7 +91,7 @@ test('03 dry runs, no-ops and validation failures preserve published files', asy
   assert.deepEqual(await Promise.all(paths.map(snapshot)), before);
   assert.deepEqual(await readdir(history), files);
   const { page } = await openPage(t, browser, area.html);
-  assert.equal(await page.locator('#rev').innerText(), committed.rev);
+  assert.equal((await data(page)).rev, committed.rev);
 
 });
 
@@ -110,11 +110,16 @@ test('04 evidence statuses in verify, render and the details agree', async t => 
     const verify = await area.run(['verify'], { code });
     const { page } = await open();
     await page.locator('#view-detail').click();
+    const { page: roadmap } = await openPage(t, browser, area.html);
+    const mark = roadmap.locator('[data-id="orders"] .check-status');
+    assert.equal(await mark.getAttribute('data-state'), code ? 'unchecked' : 'checked');
+    assert.equal(await mark.innerText(), '');
     const input = await data(page);
     assert.equal(input.rev, verify.rev);
     assert.deepEqual(input.evidence.orders.map(row => row.state), expected);
     assert.deepEqual(input.evidence.orders, verify.evidence.map(({ of, path, state }) => ({ of, path, state })));
-    assert.deepEqual(await page.locator('#detail .evidence-status').allTextContents(), labels);
+    assert.deepEqual(await page.locator('#detail .source-path').allTextContents(), [path]);
+    assert.deepEqual(await page.locator('#detail .evidence-row .check-status').evaluateAll((marks) => marks.map((mark) => mark.getAttribute('aria-label'))), labels);
     if (rendered) {
       assert.deepEqual(rendered.evidence, {
         ok: expected.filter(state => state === 'ok').length,
@@ -125,16 +130,16 @@ test('04 evidence statuses in verify, render and the details agree', async t => 
       assert.equal(rendered.bytes, (await stat(area.html)).size);
     }
   };
-  await check(['ok', 'ok'], ['正常', '正常'], 0);
+  await check(['ok', 'ok'], ['正常'], 0);
   await writeFile(file, 'new code\n');
-  await check(['changed', 'ok'], ['内容已变', '正常'], 1, await area.run(['render']));
+  await check(['changed', 'ok'], ['内容已变'], 1, await area.run(['render']));
   await rm(file);
-  await check(['missing', 'missing'], ['文件缺失', '文件缺失'], 1, await area.run(['render']));
+  await check(['missing', 'missing'], ['文件缺失'], 1, await area.run(['render']));
   const refused = await area.change([{ op: 'confirm-evidence', id: 'orders' }], [], { code: 1 });
   assert.equal(refused.code, 'EVIDENCE_MISSING');
   await writeFile(file, 'restored code\n');
   assert.ok((await area.change([{ op: 'confirm-evidence', id: 'orders' }])).page.ok);
-  await check(['ok', 'ok'], ['正常', '正常'], 0);
+  await check(['ok', 'ok'], ['正常'], 0);
 });
 
 test('05 editor paths are encoded, carried forward only at the same project root and cleared on request', async t => {
@@ -219,7 +224,7 @@ test('06 drag, export, CLI import and reset update layout in fresh browser conte
   assert.equal((await data(reset)).layout, null);
   assert.equal((await data(reset)).editor, 'vscode');
   assert.deepEqual(point((await state(reset)).cards[0]), initial);
-  assert.equal(await reset.locator('#rev').innerText(), change.rev);
+  assert.equal((await data(reset)).rev, change.rev);
   assert.deepEqual(await readdir(join(area.dir, 'history')), [change.history.split('/').at(-1)]);
 });
 
@@ -237,7 +242,7 @@ test('07 a referenced asset image really loads from disk', async t => {
   assert.deepEqual(errors, []);
 });
 
-test('08 explicit dir and root control the output path and embedded design directory', async t => {
+test('08 explicit dir and root control the output path', async t => {
   const relative = 'designs/架构 图';
   const area = await project(t, relative);
   const flags = ['--dir', relative, '--root', '.'];
@@ -247,7 +252,6 @@ test('08 explicit dir and root control the output path and embedded design direc
   assert.equal(init.page.path, rendered.path);
   await assert.rejects(stat(join(area.root, 'docs', 'arkigo', 'index.html')), { code: 'ENOENT' });
   const { page } = await openPage(t, browser, area.html);
-  assert.equal((await data(page)).designDir, relative);
   assert.equal((await data(page)).rev, rendered.rev);
 });
 
@@ -267,7 +271,7 @@ test('09 a failed page write leaves committed design and history available for r
   await rm(area.html, { recursive: true });
   assert.equal((await area.run(['render'])).rev, changed.rev);
   const { page } = await openPage(t, browser, area.html, '#/map/orders');
-  assert.equal(await page.locator('#view-title').innerText(), '已保存的订单');
+  assert.equal(await page.locator('#view-detail').innerText(), '已保存的订单');
 });
 
 test('10 concurrent changes and render leave one current revision, complete history and no lock', async t => {
@@ -283,12 +287,11 @@ test('10 concurrent changes and render leave one current revision, complete hist
   const query = await area.run(['query']);
   assert.deepEqual(query.items.map(row => row.id).sort(), [...ids].sort());
   const { page } = await openPage(t, browser, area.html);
-  assert.equal(await page.locator('#rev').innerText(), query.rev);
   const input = await data(page);
+  assert.equal(input.rev, query.rev);
   assert.deepEqual(input.design.objects.map(row => row.id).sort(), [...ids, 'shop'].sort());
   const successful = results.slice(0, ids.length);
-  assert.deepEqual(input.history.map(row => row.result).sort(), successful.map(row => row.rev).sort());
-  assert.equal(input.history[0].result, query.rev);
+  assert.equal(Object.hasOwn(input, 'history'), false);
   assert.ok(successful.every(row => row.page.ok));
   assert.deepEqual((await readdir(area.dir)).sort(), ['assets', 'design.json', 'history', 'index.html']);
   assert.deepEqual((await readdir(join(area.dir, 'history'))).sort(),
@@ -311,6 +314,7 @@ test('11 a 500-object, 800-relation design renders after a CLI change', async t 
   const input = await data(page);
   assert.equal(input.design.objects.length, 500);
   assert.equal(input.design.relations.length, 800);
-  assert.equal(await page.locator('#rev').innerText(), changed.rev);
-  assert.equal(await page.locator('#view-summary').innerText(), '规模样例实测');
+  assert.equal(input.rev, changed.rev);
+  await page.locator('#view-detail').click();
+  assert.match(await page.locator('#detail').innerText(), /规模样例实测/);
 });

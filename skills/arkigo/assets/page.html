@@ -17,34 +17,20 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span id="brand-icon"></span><strong id="project-name"></strong>
-      <button id="rev" class="tool" aria-label="最近变更"></button>
-    </div>
-    <nav id="readings" aria-label="入口"></nav>
+    <nav id="crumbs" aria-label="所在路径"></nav>
     <div class="tools">
       <button id="search-open" class="tool" aria-haspopup="dialog"><span>查找</span></button>
       <button id="theme" class="tool"></button>
     </div>
   </header>
-  <nav id="crumbs" class="location" aria-label="所在路径"></nav>
   <main id="workspace">
     <section id="reading">
-      <div class="view-heading">
-        <div><h1 id="view-title"></h1><p id="view-summary"></p><div id="view-facts" hidden></div></div>
-        <button id="view-detail" class="tool" aria-label="当前对象详情"></button>
-      </div>
       <div id="viewport" tabindex="0" aria-label="画布。方向键平移，加减号缩放，零键适应画布">
         <div id="world"></div>
         <div id="view-content" hidden></div>
       </div>
       <footer id="controls">
         <p id="hint" class="muted" hidden></p>
-        <div id="selection" hidden>
-          <span id="selection-title"></span>
-          <button id="inspect" class="tool">详情</button>
-          <button id="enter" class="tool primary">进入</button>
-        </div>
         <div class="camera-tools" role="group" aria-label="画布控制">
           <button id="zoom-out" class="tool" aria-label="缩小"></button>
           <output id="scale"></output>

@@ -39,6 +39,26 @@ function statusMark(state, labels, name) {
   return mark;
 }
 
+function checkMark(state, label, glyph) {
+  const mark = make('span', 'check-status');
+  mark.dataset.state = state;
+  mark.setAttribute('role', 'img');
+  mark.setAttribute('aria-label', label);
+  mark.title = label;
+  mark.append(icon(glyph));
+  return mark;
+}
+
+function codeCheckMark(object, evidence) {
+  const entries = Object.hasOwn(evidence, object.id) ? evidence[object.id] : [];
+  const files = entries.filter(({ of }) => of === 'implementation');
+  const checked = files.length > 0 && files.length === object.implementation?.evidence?.length &&
+    files.every(({ state }) => state === 'ok');
+  return checked
+    ? checkMark('checked', '代码依据已核对', 'checked')
+    : checkMark('unchecked', '代码依据待核对', 'unchecked');
+}
+
 function cssBox(element, { x, y, width, height }) {
   Object.assign(element.style, {
     left: x + 'px', top: y + 'px', width: width + 'px', height: height + 'px'
@@ -95,12 +115,12 @@ function writeStorage(key, value) {
 const readModes = new Map();
 const registerRead = (name, definition) => readModes.set(name, definition);
 
-function articleReading(ctx, title, className) {
-  ctx.heading(title, '');
+function articleReading(title, className) {
   const frame = byId('view-content');
   frame.hidden = false;
   frame.scrollTop = 0;
   const page = make('div', 'reading-page ' + className);
+  page.setAttribute('aria-label', title);
   frame.append(page);
   return page;
 }

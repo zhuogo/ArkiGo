@@ -1,0 +1,199 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T10:21:32.014Z",
+  "by": "codex",
+  "reason": "回写 2.1.0 的版本依据、独立安装和离线路线图回归结果。",
+  "base": "6881bf4ce147",
+  "result": "7d1dbb63c175",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.install-test",
+      "fields": [
+        "verification.checkedAt",
+        "verification.evidence",
+        "verification.note"
+      ],
+      "before": {
+        "id": "practice.install-test",
+        "type": "acceptance",
+        "title": "独立安装与发布许可回归",
+        "summary": "两份许可证相同，安装副本携带许可证，版本与发布清单一致。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "系统临时目录内的新技能和新项目"
+          ],
+          "then": [
+            "两份许可证相同，安装副本携带许可证，version 的输出与发布清单一致。",
+            "独立运行可建档、改设计、生成 HTML。"
+          ],
+          "when": "运行 core 安装用例，实际 install、npm ci、version、init、change 和 render"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "12 arity, duplicate flags, all exit codes and installer behavior"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-20T15:14:25.556Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/scripts/commands/install.mjs"
+            }
+          ],
+          "note": "core 安装用例通过；临时目录内 install 后 npm ci，再以独立副本执行 version、init、change、render、check 均成功。许可证逐字节相同。",
+          "status": "passed"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice.version",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "practice.version",
+        "type": "interface",
+        "title": "version 检查运行准备",
+        "summary": "显示技能和 Node 版本、Ajv 是否可用与命令清单。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "kind": "cli",
+          "signature": "version"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、7 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/version.mjs",
+            "symbol": "version"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/package.json",
+            "symbol": "version、engines、dependencies"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
+              "path": "skills/arkigo/scripts/commands/version.mjs",
+              "symbol": "version"
+            },
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "4df260f6f2986b4290f56811772c8998d7318d76d75ec2e43e9b7821825d0f44",
+              "path": "skills/arkigo/package.json",
+              "symbol": "version、engines、dependencies"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.note"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从文件打开路线图，验证导航、详情、画布拖动与核对图标。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "桌面与窄屏离线页面，含跨层关系、长内容及不同的代码依据状态"
+          ],
+          "then": [
+            "顶栏、画布与底栏可用，详情操作从对象进入，旧拍板、进度及变更地址回到地图。",
+            "拖动画布不选中文字，指针操作不显示画布焦点轮廓，键盘仍可导航。",
+            "核对图标遵循代码依据快照，地图、流程、查找、清单、主题和布局交互通过回归。",
+            "跨分区、跨层投影和绕行卡片的走线保持可见，转角圆滑，选中后仍可辨认其他主线。",
+            "连线可以从分区内部穿过边框并连续显示，跨分区的关系标签仍可打开原关系。",
+            "浅色和深色模式下，不同连线可用颜色区分，标签底色与相应连线对应，选中后颜色保持对应。",
+            "在有足够空间的绕行中，首尾转角与卡片保持间距。",
+            "顶栏省略设计版本号，查找的归属树和对象详情省略「已接受」标记。",
+            "详情开合时画布的视口尺寸、位置和缩放保持稳定；详情支持滚动及减少动态效果。",
+            "模块详情展示作用及合并去重后的关联文件，可以复制文件路径，通过标题旁的箭头进入模块。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/page.test.mjs"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T08:59:32.639Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test 全部 162 项通过。用 Chromium 离线打开归藏路线图，验证需求与叙事、模板与主题的两块详情、路径去重和复制、标题箭头进入模块。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

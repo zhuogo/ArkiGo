@@ -1,0 +1,89 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T08:51:57.070Z",
+  "by": "ai",
+  "reason": "记录详情覆盖与顶栏简化的验收结果",
+  "base": "faf777a3e9a0",
+  "result": "19be41744498",
+  "changes": [
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "verification.checkedAt",
+        "verification.note"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从文件打开路线图，验证导航、详情、画布拖动与核对图标。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "桌面与窄屏离线页面，含跨层关系、长内容及不同的代码依据状态"
+          ],
+          "then": [
+            "顶栏、画布与底栏可用，详情操作从对象进入，旧拍板、进度及变更地址回到地图。",
+            "拖动画布不选中文字，指针操作不显示画布焦点轮廓，键盘仍可导航。",
+            "核对图标遵循代码依据快照，地图、流程、查找、清单、主题和布局交互通过回归。",
+            "跨分区、跨层投影和绕行卡片的走线保持可见，转角圆滑，选中后仍可辨认其他主线。",
+            "连线可以从分区内部穿过边框并连续显示，跨分区的关系标签仍可打开原关系。",
+            "浅色和深色模式下，不同连线可用颜色区分，标签底色与相应连线对应，选中后颜色保持对应。",
+            "在有足够空间的绕行中，首尾转角与卡片保持间距。",
+            "顶栏省略设计版本号，查找的归属树和对象详情省略「已接受」标记。",
+            "详情开合时画布的视口尺寸、位置和缩放保持稳定；详情支持滚动及减少动态效果。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/page.test.mjs"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T08:41:55.111Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test 共 162 项通过。Chromium 和 WebKit 核对归藏 900px 和 390px 布局，需求与叙事到模板与主题的首尾直线各为 14 个画布像素，连线避开卡片并可穿过分区边框。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

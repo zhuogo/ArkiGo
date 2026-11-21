@@ -1,0 +1,203 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-21T08:17:37.658Z",
+  "by": "ai",
+  "reason": "优化离线路线图的跨分区走线与关系可读性",
+  "base": "31c67055e43c",
+  "result": "b702bcd72da6",
+  "changes": [
+    {
+      "op": "update",
+      "id": "viewer.map",
+      "fields": [
+        "body.elements",
+        "sources"
+      ],
+      "before": {
+        "id": "viewer.map",
+        "type": "screen",
+        "title": "地图",
+        "summary": "按一层归属看卡片、分区和主要关系；选中一张卡片再看它的全部关系。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "elements": [
+            "系统和模块只显示直接下级。模块、流程、数据、接口、界面成卡；角色可以从查找或详情打开，本层没有别的卡片时才成卡。规则、验收、决策在所属对象的详情中阅读。",
+            "主界面采用顶栏、画布和底栏。画布内禁止原生文本选取和拖拽，卡片拖动和画布平移由应用管理。",
+            "有实现依据且生成时全部核对一致的卡片显示带勾圆圈，其余显示虚线圆圈。",
+            "按分组或类型分区；宽屏分区并排，放不下换行。自动排版按主要关系分层，同一输入位置稳定，手动位置保存在浏览器并可导出。",
+            "连接线将下级关系合并到可见卡片，点击标签查看原关系。线多于卡片时默认只画主要关系，选中后显示该卡片的全部连线。",
+            "在宽屏和窄屏单击卡片均打开详情。进入模块和查看流程在详情内提供。双击和画布缩放导航也可进入，顶栏路径和缩小可返回。底栏提供缩放、适应、布局重置及导出。"
+          ],
+          "purpose": "项目负责人先看组成；维护者进入一个模块找流程、接口及关系。",
+          "route": "#/map/<对象ID>",
+          "states": [
+            "无卡片时显示空层，可以点击顶栏当前路径查看本层详情。",
+            "使用指针平移或拖动卡片时，画布边缘不显示焦点轮廓。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.1 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/map.js",
+            "symbol": "registerRead 的 render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/model.mjs",
+            "symbol": "indexDesign、projectRelations"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/layout.mjs",
+            "symbol": "layoutMap、layoutFlow"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/camera.js",
+            "symbol": "createCamera"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render、navigate、initialize"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 接手时读到的用户留言：1.0 更清晰；同意地图照 1.0 重画的方案（卡片正常大小，默认只画主线，选中再看其他关系）"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/graph.js",
+            "symbol": "graphCard, renderGraph"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/dom.js",
+            "symbol": "codeCheckMark"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/page.css",
+            "symbol": "画布选取、焦点和导航样式"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "9aec648dbaf18eb9aa6d0ca4f7430d076c5063c4505bf245b6766423bb2cf851",
+              "path": "skills/arkigo/assets/graph.js",
+              "symbol": "graphCard, renderGraph"
+            },
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "d151b67c3c20afd4c952048c5b7b5646511c8f92b76c19047f7f40a3e80d8382",
+              "path": "skills/arkigo/assets/camera.js",
+              "symbol": "createCamera"
+            },
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "fd68025c0ee9a23458b9f25641a20841fb45b07d0a0e0b1058b0debdeefc0c6a",
+              "path": "skills/arkigo/assets/readings/map.js",
+              "symbol": "地图读法的 render"
+            },
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "9f72e22c02bf0fc422f4440b8d5ff0ee60a7cf38fe1fa99bdb4508619717e184",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "drawNavigation, navigate, select"
+            },
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "e3310f6b69ffd759502803a43e0ab902b8506546f56adcff1e69a30db0420109",
+              "path": "skills/arkigo/assets/dom.js",
+              "symbol": "codeCheckMark"
+            },
+            {
+              "checkedAt": "2026-11-21T08:00:21.371Z",
+              "hash": "ad3626be317a6ff99371f748c6caaed6b61f3b9beb21b3eb307b4ce0e4bedcee",
+              "path": "skills/arkigo/assets/page.css",
+              "symbol": "画布选取、焦点和导航样式"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "body.then"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从文件打开路线图，验证导航、详情、画布拖动与核对图标。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "given": [
+            "桌面与窄屏离线页面，含跨层关系、长内容及不同的代码依据状态"
+          ],
+          "then": [
+            "顶栏、画布与底栏可用，详情操作从对象进入，旧拍板、进度及变更地址回到地图。",
+            "拖动画布不选中文字，指针操作不显示画布焦点轮廓，键盘仍可导航。",
+            "核对图标遵循代码依据快照，地图、流程、查找、清单、主题和布局交互通过回归。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-21 用户要求精简路线图、移除页面拍板、变更和进度，核对状态用图标。"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T08:00:21.371Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/page.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test 共 161 项通过。核心 98 项、页面 14 项、Chromium 与 WebKit 回归 38 项、端到端 11 项。覆盖画布拖拽、触屏详情、核对图标和旧链接回退。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

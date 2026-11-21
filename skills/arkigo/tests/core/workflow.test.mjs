@@ -342,7 +342,7 @@ test('12 arity, duplicate flags, all exit codes and installer behavior', t => {
   ]) assert.equal(area.json(args, { code: 2 }).code, code);
   assert.match(area.json(['bogus'], { code: 2 }).message, /\brender\b/);
   const version = area.json(['version']);
-  assert.equal(version.version, '2.0.0');
+  assert.equal(version.version, read(join(skill, 'package.json')).version);
   assert.equal(version.dependencies.ajv, true);
   assert.ok(version.commands.includes('render'));
   const installed = area.json(['install', 'new-skill']);

@@ -18,6 +18,7 @@ function createCamera(ctx) {
   let wheelUsed = false;
   let drawFrame = 0;
   let edgeScale = 1;
+  let preservingCamera = false;
 
   const worldPoint = (event) => {
     const rect = viewport.getBoundingClientRect();
@@ -74,6 +75,16 @@ function createCamera(ctx) {
     value.x += (centered ? width / 2 : clamp(p.x, horizontal, width - horizontal)) - p.x;
     value.y += (centered ? height / 2 : clamp(p.y, vertical, height - vertical)) - p.y;
     apply();
+  }
+
+  function focusWithoutMoving(element) {
+    preservingCamera = true;
+    element.focus({ preventScroll: true });
+    preservingCamera = false;
+  }
+
+  function revealFocusedCard(card) {
+    if (!preservingCamera) reveal(card);
   }
 
   function stopTransition() {
@@ -176,6 +187,11 @@ function createCamera(ctx) {
     return { x: midpoint(a.x, b.x), y: midpoint(a.y, b.y), distance: Math.hypot(a.x - b.x, a.y - b.y) };
   }
 
+  for (const name of ['selectstart', 'dragstart']) {
+    viewport.addEventListener(name, (event) => {
+      if (event.target.closest('#world')) event.preventDefault();
+    });
+  }
   viewport.addEventListener('pointerdown', (event) => {
     if (!scene || event.button !== 0 || event.target.closest('.edge-label, #view-content')) return;
     stopTransition();
@@ -195,8 +211,9 @@ function createCamera(ctx) {
     const record = element && scene.cardsByAddress.get(element.dataset.id);
     if (element && !scene.draggable && event.pointerType !== 'touch') return;
     const card = scene.draggable ? record?.card : null;
-    (element ?? viewport).focus({ preventScroll: true });
+    focusWithoutMoving(element ?? viewport);
     (element ?? viewport).setPointerCapture(event.pointerId);
+    if (event.pointerType === 'mouse') event.preventDefault();
     gesture = { pointer: event.pointerId, point, card, element, x: card?.x ?? value.x, y: card?.y ?? value.y };
   });
 
@@ -298,7 +315,7 @@ function createCamera(ctx) {
     event.preventDefault();
   });
   return {
-    setScene, save, reveal, snapshot, animateLevel, stopTransition, reset, zoom,
+    setScene, save, reveal, revealFocusedCard, focusWithoutMoving, snapshot, animateLevel, stopTransition, reset, zoom,
     transitioning: () => Boolean(cancelTransition),
     consumeClick: (event) => event.detail > 0 && performance.now() < suppressed,
     abortGesture

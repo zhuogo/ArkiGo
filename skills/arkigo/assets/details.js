@@ -1,7 +1,7 @@
 const fieldLabels = {
   summary: '摘要', status: '设计状态', implementation: '实现情况', verification: '验收结果', sources: '依据',
   audience: '面向用户', goals: '目标', scopeIn: '范围内', scopeOut: '范围外', success: '成功标准',
-  assumptions: '假设', description: '角色说明', responsibilities: '职责', boundaries: '边界', inputs: '输入',
+  assumptions: '假设', description: '角色说明', inputs: '输入',
   outputs: '输出', trigger: '触发条件', preconditions: '前置条件', steps: '步骤', transitions: '流转',
   start: '起点', ends: '终点', when: '当', constraint: '约束', exceptions: '例外', rationale: '理由',
   fields: '字段', states: '状态', stateTransitions: '状态流转', ownership: '归属', retention: '保留期限',
@@ -11,7 +11,8 @@ const fieldLabels = {
   action: '动作', actor: '执行角色', failure: '失败处理', name: '名称', type: '类型', required: '必填',
   from: '从', to: '到', code: '错误码'
 };
-const evidenceLabels = { ok: '正常', changed: '内容已变', missing: '文件缺失', unrecorded: '未核对' };
+const evidenceLabels = { ok: '正常', changed: '内容已变', missing: '文件缺失', unrecorded: '待核对' };
+const verificationStates = { passed: '通过', failed: '未通过', unknown: '未验证' };
 const origins = { user: '来自用户', ai: '来自 AI', code: '来自代码', doc: '来自文档' };
 
 function detailSection(title, content, key) {
@@ -130,7 +131,6 @@ function bodyRow(key, value, object, ctx) {
 const bodyFields = {
   system: ['audience', 'goals', 'scopeIn', 'scopeOut', 'success', 'assumptions'],
   actor: ['description', 'goals'],
-  module: ['responsibilities', 'boundaries', 'inputs', 'outputs'],
   flow: ['trigger', 'preconditions', 'steps', 'transitions', 'start', 'ends'],
   step: ['action', 'actor', 'inputs', 'outputs', 'failure'],
   rule: ['when', 'constraint', 'exceptions', 'rationale'],
@@ -209,27 +209,61 @@ async function copySource(path) {
   announce('已复制路径');
 }
 
-function evidenceRows(ctx, object, items, of) {
-  const list = make('ul', 'evidence-list');
+function evidenceEntries(ctx, object, items, of) {
   const occurrences = new Map();
-  for (const item of items) {
+  return items.map((item) => {
     const path = item.path ?? item.ref;
     const isFile = Boolean(item.path) || item.kind === 'file';
     const occurrence = occurrences.get(path) ?? 0;
     if (isFile) occurrences.set(path, occurrence + 1);
     const state = isFile ? sourceStatus(ctx, object.id, of, path, occurrence) : 'unrecorded';
+    return { path, isFile, state, symbols: item.symbol ? [item.symbol] : [] };
+  });
+}
+
+function evidenceRows(ctx, entries) {
+  const list = make('ul', 'evidence-list');
+  for (const { path, isFile, state, symbols } of entries) {
     const row = make('li', 'evidence-row');
     const location = make('div');
     const href = isFile && editorLink(ctx, path);
     const target = make(href ? 'a' : 'code', 'source-path', path);
     if (href) target.href = href;
     location.append(target);
-    if (item.symbol) location.append(make('small', 'muted', item.symbol));
-    row.append(location, statusMark(state, evidenceLabels, 'evidence-status'),
+    for (const symbol of symbols) location.append(make('small', 'muted', symbol));
+    row.append(location, checkMark(state === 'ok' ? 'checked' : state, evidenceLabels[state],
+      state === 'ok' ? 'checked' : ['changed', 'missing'].includes(state) ? 'warning' : 'unchecked'),
       iconButton('copy', '复制路径', () => copySource(path)));
     list.append(row);
   }
   return list;
+}
+
+function appendModuleContent(content, object, ctx) {
+  const description = make('div');
+  if (object.summary) description.append(make('p', '', object.summary));
+  const responsibilities = (object.body.responsibilities ?? []).filter((item) => item !== object.summary);
+  if (responsibilities.length) description.append(detailList(responsibilities, ctx));
+  if (!description.children.length) description.append(make('p', 'muted', '暂无作用说明'));
+  content.append(detailSection('模块作用', description, 'purpose'));
+
+  const priorities = ['unrecorded', 'ok', 'changed', 'missing'];
+  const files = new Map();
+  const entries = [
+    ...evidenceEntries(ctx, object, object.implementation?.evidence ?? [], 'implementation'),
+    ...evidenceEntries(ctx, object, (object.sources ?? []).filter(({ kind }) => kind === 'file'), 'source')
+  ];
+  for (const entry of entries) {
+    const current = files.get(entry.path);
+    if (!current) {
+      files.set(entry.path, entry);
+      continue;
+    }
+    current.symbols = [...new Set([...current.symbols, ...entry.symbols])];
+    if (priorities.indexOf(entry.state) > priorities.indexOf(current.state)) current.state = entry.state;
+  }
+  const relatedFiles = files.size ? evidenceRows(ctx, files.values()) : make('p', 'muted', '暂无关联文件');
+  content.append(detailSection('关联文件', relatedFiles, 'files'));
 }
 
 function relationRows(ctx, entries, subject) {
@@ -257,30 +291,37 @@ function relationRows(ctx, entries, subject) {
 function renderDetails(ctx, address, close) {
   const object = ctx.index.get(address);
   const heading = make('div', 'detail-head');
-  const meta = make('div', 'detail-meta');
-  meta.append(typeMark(object.type), make('span', '', types[object.type] ?? '步骤'));
-  if (object.status) meta.append(statusMark(object.status, statuses, 'design-status'));
-  if (object.origin) meta.append(make('span', 'muted', origins[object.origin]));
   const title = make('h2', '', inlinePlain(object.title, ctx));
   title.id = 'detail-title';
   title.tabIndex = -1;
-  heading.append(meta, iconButton('close', '关闭详情', close), title);
-  if (object.type !== 'step' && object.summary) heading.append(make('p', '', object.summary));
-  const actions = make('div', 'detail-actions');
-  if (ctx.canEnter(address)) {
-    actions.append(button(object.type === 'flow' ? '查看流程' : '进入模块', () => ctx.enter(address), 'tool primary'));
-  }
-  if (object.type !== 'step') {
-    actions.append(button('写批注', () => editDecision(ctx, object, 'comment'), 'tool detail-comment'));
-  }
-  if (actions.children.length) heading.append(actions);
+  const closeButton = iconButton('close', '关闭详情', close);
   const content = make('div', 'detail-content');
-  appendObjectContent(content, object, ctx);
-  appendChildren(content, object, ctx);
-  const related = ctx.design.relations.filter(({ from, to }) => from === address || to === address);
-  if (related.length) content.append(detailSection('相关关系', relationRows(ctx, related, address)));
-  appendEvidence(content, object, ctx);
-  content.append(make('code', 'detail-id', object.id));
+  if (object.type === 'module') {
+    const row = make('div', 'module-detail-title');
+    row.append(title);
+    if (ctx.canEnter(address)) row.append(iconButton('step', '进入模块', () => ctx.enter(address)));
+    row.append(closeButton);
+    heading.append(row);
+    appendModuleContent(content, object, ctx);
+  } else {
+    const meta = make('div', 'detail-meta');
+    meta.append(typeMark(object.type), make('span', '', types[object.type] ?? '步骤'));
+    if (object.status && object.status !== 'accepted') meta.append(statusMark(object.status, statuses, 'design-status'));
+    if (object.origin) meta.append(make('span', 'muted', origins[object.origin]));
+    heading.append(meta, closeButton, title);
+    if (object.type !== 'step' && object.summary) heading.append(make('p', '', object.summary));
+    if (ctx.canEnter(address)) {
+      const actions = make('div', 'detail-actions');
+      actions.append(button('查看流程', () => ctx.enter(address), 'tool primary'));
+      heading.append(actions);
+    }
+    appendObjectContent(content, object, ctx);
+    appendChildren(content, object, ctx);
+    const related = ctx.design.relations.filter(({ from, to }) => from === address || to === address);
+    if (related.length) content.append(detailSection('相关关系', relationRows(ctx, related, address)));
+    appendEvidence(content, object, ctx);
+    content.append(make('code', 'detail-id', object.id));
+  }
   byId('detail').replaceChildren(heading, content);
   byId('detail').scrollTop = 0;
   return title;
@@ -312,26 +353,27 @@ function appendChildren(content, object, ctx) {
 }
 
 function appendEvidence(content, object, ctx) {
-  const implementation = implementationState(object, ctx.evidence);
-  if (implementation) {
+  if (implementationState(object, ctx.evidence)) {
     const body = make('div', 'implementation-detail');
-    body.append(statusMark(implementation, implementations, 'implementation-status'));
+    body.append(codeCheckMark(object, ctx.evidence));
     if (object.implementation?.note) body.append(rich(make('p'), object.implementation.note, ctx));
     if (object.implementation?.evidence?.length) {
-      body.append(evidenceRows(ctx, object, object.implementation.evidence, 'implementation'));
+      body.append(evidenceRows(ctx, evidenceEntries(ctx, object, object.implementation.evidence, 'implementation')));
     }
     content.append(detailSection(fieldLabels.implementation, body));
   }
   if (object.type === 'acceptance') {
     const verification = object.verification;
     const body = make('div');
-    body.append(make('p', 'muted', { passed: '通过', failed: '未通过' }[verification?.status] ?? '未验证'));
+    body.append(make('p', 'muted', verificationStates[verification?.status ?? 'unknown']));
     if (verification?.note) body.append(rich(make('p'), verification.note, ctx));
-    if (verification?.evidence?.length) body.append(evidenceRows(ctx, object, verification.evidence, 'verification'));
+    if (verification?.evidence?.length) {
+      body.append(evidenceRows(ctx, evidenceEntries(ctx, object, verification.evidence, 'verification')));
+    }
     content.append(detailSection(fieldLabels.verification, body));
   }
   if (object.sources?.length) {
-    content.append(detailSection(fieldLabels.sources, evidenceRows(ctx, object, object.sources, 'source')));
+    content.append(detailSection(fieldLabels.sources, evidenceRows(ctx, evidenceEntries(ctx, object, object.sources, 'source'))));
   }
 }
 

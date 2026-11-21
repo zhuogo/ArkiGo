@@ -13,7 +13,7 @@ function graphCard(ctx, card, data, marks) {
   head.append(kind);
   const implementation = implementationState(data, ctx.evidence);
   if (data.phase) head.append(make('span', 'step-phase', data.phase));
-  else if (implementation) head.append(statusMark(implementation, implementations, 'implementation-status'));
+  else if (implementation) head.append(codeCheckMark(data, ctx.evidence));
   const flags = make('span', 'card-flags');
   for (const [type, relations] of Object.entries(marks ?? {})) {
     const label = annotationTypes[type];
@@ -27,48 +27,54 @@ function graphCard(ctx, card, data, marks) {
     mark.append(icon('warning'), textNode('失败处理'));
     flags.append(mark);
   }
-  const changes = ctx.mode === 'map' && ctx.marksFor(card.id);
-  if (changes?.size) {
-    const label = [...changes].map((op) => changeLabels[op]).join('、');
-    const mark = make('span', 'card-change', '变更');
-    mark.title = label;
-    mark.setAttribute('aria-label', label);
-    flags.append(mark);
-  }
   if (ctx.canEnter(data.id)) flags.append(icon('right'));
   element.append(head, make('strong', 'card-title', inlinePlain(data.title, ctx)),
     make('span', 'card-summary', inlinePlain(data.summary, ctx)), flags);
+  let touch = false;
+  element.addEventListener('pointerdown', (event) => { touch = event.pointerType === 'touch'; });
   element.addEventListener('click', (event) => {
     if (ctx.camera.consumeClick(event)) return;
-    const enterable = ctx.canEnter(data.id);
-    if (enterable && event.detail === 0 && ctx.selection() === data.id) ctx.enter(data.id);
-    // Beside a wide map the details open at once. On a narrow screen they would cover the map, so a card that
-    // can be entered is only selected there and the bar below offers its details and its inside.
-    else ctx.select(data.id, !enterable || ctx.direction !== 'vertical');
+    ctx.select(data.id, true);
   });
   element.addEventListener('dblclick', () => {
-    if (ctx.canEnter(data.id)) ctx.enter(data.id);
+    if (!touch && ctx.canEnter(data.id)) ctx.enter(data.id);
   });
-  element.addEventListener('focus', () => ctx.camera.reveal(card));
+  element.addEventListener('focus', () => ctx.camera.revealFocusedCard(card));
   return element;
 }
+
+const connectionPalette = [
+  ['#2861b4', '#83b6ff'], ['#a74f17', '#ffab71'], ['#287854', '#6fd9a2'],
+  ['#7646ae', '#c9a2fc'], ['#aa3c6d', '#f498c0'], ['#167980', '#68d7dc'],
+  ['#856500', '#eac35b'], ['#4b5598', '#a4afff'], ['#903c97', '#e8a3e7'],
+  ['#5d711f', '#b9d674'], ['#b13e42', '#ff9b99'], ['#286f96', '#76cbe8']
+].map(([light, dark]) => 'light-dark(' + light + ', ' + dark + ')');
 
 function renderGraph(ctx, plan, records, annotations = new Map(), draggable = false) {
   const world = byId('world');
   const cardElements = new Map();
   const visible = new Map(plan.cards.map((card) => [card.id, card]));
   const vertical = plan.direction === 'vertical';
-  const suffix = 'graph-arrow';
-  const routes = svgElement('svg', { class: 'graph-edges', width: 1, height: 1, 'aria-hidden': true });
-  const arrow = svgElement('marker', {
-    id: suffix, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse'
+  const colors = plan.edges.map((_, index) => {
+    if (index < connectionPalette.length) return connectionPalette[index];
+    // Space additional hues apart while keeping contrast consistent within each theme.
+    const hue = index * 137.508 % 360;
+    return 'light-dark(oklch(48% .12 ' + hue + '), oklch(76% .12 ' + hue + '))';
   });
-  arrow.append(svgElement('path', { d: 'M0 0l10 5-10 5z', class: 'arrow-tip' }));
+  const routes = svgElement('svg', { class: 'graph-edges', width: 1, height: 1, 'aria-hidden': true });
   const defs = svgElement('defs', {});
-  defs.append(arrow);
+  for (const [index, color] of colors.entries()) {
+    const arrow = svgElement('marker', {
+      id: 'graph-arrow-' + index, viewBox: '0 0 10 10', refX: 9, refY: 5,
+      markerWidth: 9, markerHeight: 9, markerUnits: 'userSpaceOnUse', orient: 'auto-start-reverse'
+    });
+    arrow.append(svgElement('path', { d: 'M1 1l8 4-8 4', class: 'arrow-tip', style: '--connection-color:' + color }));
+    defs.append(arrow);
+  }
   routes.append(defs);
   const paths = svgElement('g', {});
-  routes.append(paths);
+  const emphasizedPaths = svgElement('g', {});
+  routes.append(paths, emphasizedPaths);
   const labels = make('div', 'edge-labels');
   for (const zone of plan.zones) {
     const box = make('div', 'graph-zone');
@@ -86,12 +92,15 @@ function renderGraph(ctx, plan, records, annotations = new Map(), draggable = fa
   }
   function drawEdges(scale = 1) {
     paths.replaceChildren();
+    emphasizedPaths.replaceChildren();
     labels.replaceChildren();
     const occupied = [];
     const ports = new Map();
     const used = new Map();
+    const connections = [];
     // Lines drawn by default claim their label positions first.
-    for (const edge of [...plan.edges].sort((a, b) => Number(a.main === false) - Number(b.main === false))) {
+    const ordered = [...plan.edges].sort((a, b) => Number(a.main === false) - Number(b.main === false));
+    for (const [index, edge] of ordered.entries()) {
       const from = visible.get(edge.from);
       const to = visible.get(edge.to);
       // On a map every line of a card leaves from its own place, so lines that share a corridor stay apart.
@@ -104,11 +113,20 @@ function renderGraph(ctx, plan, records, annotations = new Map(), draggable = fa
         (lane % 2 ? 1 : -1) * Math.min(edge.relations ? 44 : 28, Math.ceil(lane / 2) * (edge.relations ? 11 : 8)));
       if (!points) continue;
       const ends = { 'data-from': records.get(edge.from).id, 'data-to': records.get(edge.to).id };
-      const kind = (edge.back ? ' back-edge' : '') + (edge.main === false ? ' minor-edge' : '');
-      paths.append(svgElement('path', {
-        class: 'graph-edge' + kind, ...ends, d: roundedPath(points),
-        'marker-end': 'url(#' + suffix + ')', ...(edge.mutual && { 'marker-start': 'url(#' + suffix + ')' })
-      }));
+      const selected = ctx.selection() === ends['data-from'] || ctx.selection() === ends['data-to'];
+      const kind = (edge.back ? ' back-edge' : '') + (edge.main === false ? ' minor-edge' : '') +
+        (selected ? ' edge-selected' : '');
+      const color = colors[index];
+      const arrow = 'url(#graph-arrow-' + index + ')';
+      const path = svgElement('path', {
+        class: 'graph-edge' + kind, ...ends, d: roundedPath(points, plan.cards), style: '--connection-color:' + color,
+        'marker-end': arrow, ...(edge.mutual && { 'marker-start': arrow })
+      });
+      paths.append(path);
+      connections.push({ edge, points, kind, ends, path, color });
+    }
+    const mainRoutes = connections.filter(({ edge }) => edge.main !== false).map(({ points }) => points);
+    for (const { edge, points, kind, ends, path, color } of connections) {
       const name = relationNames[edge.type];
       const exactLabel = edge.count === 1 ? edge.relations[0].label ?? edge.relations[0].when : undefined;
       const label = edge.when ?? exactLabel ?? name;
@@ -125,13 +143,23 @@ function renderGraph(ctx, plan, records, annotations = new Map(), draggable = fa
       tag.title = caption;
       tag.dataset.from = ends['data-from'];
       tag.dataset.to = ends['data-to'];
+      tag.style.setProperty('--connection-color', color);
+      const emphasize = () => {
+        const active = tag.matches(':hover, :focus-visible');
+        path.classList.toggle('edge-emphasized', active);
+        (active ? emphasizedPaths : paths).append(path);
+      };
+      for (const event of ['pointerenter', 'pointerleave', 'focus', 'blur']) {
+        tag.addEventListener(event, emphasize);
+      }
       const textWidth = [...caption].reduce((sum, char) => sum + (char.charCodeAt(0) > 255 ? 12 : 7), 0);
       const separate = largeTargets.matches && Boolean(edge.relations);
       const target = separate ? Math.ceil(44 / scale) : 0;
       const width = Math.max(target, Math.min(190, 14 + textWidth));
       const height = Math.max(target, 23);
       let position = placeConnectionLabel(
-        points, width, height, plan.cards, occupied, plan.bounds, vertical, separate
+        points, width, height, plan.cards, occupied, plan.bounds, vertical, separate,
+        edge.main === false ? [...mainRoutes, points] : mainRoutes
       );
       // A label too long for the gap between two cards is cut to the gap; its title keeps the full text.
       const blocking = plan.cards.filter((card) => overlaps(card, position));

@@ -56,14 +56,13 @@ function inventoryTable(ctx, type, rows) {
 }
 
 registerRead('inventory', {
-  label: '清单', icon: 'inventory', article: true,
+  label: '清单', article: true,
   render(ctx) {
-    const page = articleReading(ctx, '项目清单', 'inventory-page');
+    const page = articleReading('项目清单', 'inventory-page');
     const toolbar = make('div', 'reading-toolbar');
     const modules = [...ctx.index.objects.values()].filter(({ type }) => type === 'module').sort(compareObjects);
     const filters = {
       status: filterSelect('设计状态', Object.entries(statuses)),
-      implementation: filterSelect('实现情况', Object.entries(implementations)),
       module: filterSelect('所属模块', [['@root', '项目直属'], ...modules.map(({ id, title }) => [id, title])])
     };
     const results = make('div', 'inventory-results');

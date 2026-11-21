@@ -64,13 +64,13 @@ arkigo query --implementation stale
 
 `confirm-evidence` 的意思是「我重新读过代码，它仍然成立」。没读就确认，等于把提醒关掉，设计从此失去发现偏差的能力。数量多到这一次读不完时，只处理读过的，其余的留着，并告诉用户还剩多少。
 
-用户问「做到哪了」时，用 `arkigo query --implementation planned`（以及 `partial`、`unknown`）和 `arkigo check` 取数，并提醒他页面的「进度」里有同样的内容。
+用户问「做到哪了」时，用 `arkigo query --implementation planned`（以及 `partial`、`unknown`）和 `arkigo check` 取数。页面上的图标展示生成时各对象的代码依据核对情况。
 
-## 用户在页面上拍板之后
+## 用户确认之后
 
-用户在页面的「待拍板」里接受、否决、为待定项选择选项、写批注，然后从两个出口之一交给你。
+用户在对话里确认提议、否决方案、选择选项或提出修改时，核对相关对象并用 `change` 写入。旧版离线页导出的文字和文件可按以下方式处理。
 
-### 用户贴来一段文字
+### 用户贴来旧版导出的文字
 
 文字以「我在 ArkiGo 页面上做了下面这些决定」开头，写明设计目录、他看到的版本和逐条决定。把前三种决定写成修改项：
 
@@ -99,7 +99,7 @@ arkigo change --reason "用户在页面上拍板" --by "<用户的名字>" --bas
 - **`--by` 写用户**：这些是他的决定，变更记录和待定项的「谁定的」都会记成他。
 - **`--base` 写他看到的版本**：退出码 3 表示他看过之后设计又变了。用 `arkigo history` 找出那之后的变更，用 `arkigo history --show <rev>` 看有没有改到这几个对象。没改到的，去掉 `--base` 写入；改到了的，先告诉用户现在是什么样子，问他的决定是否不变。
 
-### 用户给了一个导出的文件
+### 用户给了一个旧版导出的文件
 
 ```bash
 arkigo change --from-decisions decisions.json --reason "用户在页面上拍板" --by "<用户的名字>" --dry-run

@@ -2,7 +2,6 @@ import { lstatSync, readFileSync } from 'node:fs';
 import { revision } from './design.mjs';
 import { CliError } from './errors.mjs';
 import { designEvidence } from './evidence.mjs';
-import { historyFiles, readHistory } from './history.mjs';
 import { writeAtomic } from './io.mjs';
 import { projectPath } from './paths.mjs';
 import { loadDesign, readFormat } from './validate.mjs';
@@ -30,9 +29,7 @@ function readLayout(path) {
 
 export async function renderPage(locations, { design = loadDesign(locations), rev = revision(design), editor = null }) {
   const { buildPage } = await import('../page.mjs');
-  const designDir = projectPath(locations.root, locations.dir);
   const layout = readLayout(locations.layout);
-  const history = historyFiles(locations.history).slice(0, 30).map(file => readHistory(locations.history, file));
   const evidence = Object.create(null);
   const counts = { ok: 0, changed: 0, missing: 0, unrecorded: 0 };
   for (const { id, of, path, state } of designEvidence(design, locations.root)) {
@@ -40,7 +37,7 @@ export async function renderPage(locations, { design = loadDesign(locations), re
     counts[state]++;
   }
   const html = buildPage({
-    design, rev, layout, history, evidence, designDir, generatedAt: new Date().toISOString(), editor,
+    design, rev, layout, evidence, generatedAt: new Date().toISOString(), editor,
     ...(editor && { projectRoot: locations.root }),
   });
   writeAtomic(locations.page, html);
