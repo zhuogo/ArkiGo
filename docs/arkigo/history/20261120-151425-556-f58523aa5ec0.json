@@ -1,0 +1,893 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:14:25.556Z",
+  "by": "ai",
+  "reason": "给各模块补上开工入口并登记已执行的发布回归、独立安装和规模基准",
+  "base": "3645d8ce6677",
+  "result": "f58523aa5ec0",
+  "changes": [
+    {
+      "op": "update",
+      "id": "arkigo",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "arkigo",
+        "type": "system",
+        "title": "ArkiGo",
+        "summary": "AI 维护一份可追溯的项目设计，人用离线页面读懂项目并做决定。",
+        "parent": null,
+        "status": "accepted",
+        "origin": "user",
+        "body": {
+          "assumptions": [
+            "运行命令需要 Node.js 22 或以上及 Ajv；日常使用无构建步骤",
+            "浏览器打开同目录的 index.html，引用的本地媒体随资产目录一起交付"
+          ],
+          "audience": [
+            "用 AI 编程的个人和小团队，项目可以从一个想法或已有代码开始",
+            "需要按规则实现、定位代码并回写进度的 AI 编程助手"
+          ],
+          "goals": [
+            "让需求、模块、流程、规则、数据、接口、界面、验收和决策持续留在一份设计里",
+            "把人的判断、AI 的建议和可核对的文件依据留给下一次开发"
+          ],
+          "scopeIn": [
+            "从想法或现有项目建档",
+            "管理内容、版本和依据，按模块取开工材料",
+            "同一设计的离线阅读、批注、拍板和变更回看"
+          ],
+          "scopeOut": [
+            "服务、数据库、账号、云同步和多人实时协同",
+            "自动扫描仓库、推导业务影响、运行测试或连接 AI 接口",
+            "浏览器直接编辑设计正文，或自动转换旧版格式"
+          ],
+          "success": [
+            "初次读者能说明项目做什么、有哪些模块以及一项修改怎样从讨论走到落地",
+            "AI 能从局部材料找到决定、约束、验收和依据",
+            "代码变化后可以定位待复查的记录，人做的决定可以回写"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 1、2 节"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-20 「ArkiGo 方案没问题，开工，许可证用MIT。我们的目标是让该Skill 可以在今后，打开AI时代的设计范式。」"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/SKILL.md",
+            "symbol": "分工、先看这次是哪种情况"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "model",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "model",
+        "type": "module",
+        "title": "设计协议与校验",
+        "summary": "用稳定对象和关系表达同一份设计，分开设计状态、实现依据与验收结果。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 10,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "boundaries": [
+            "只验证结构与已登记依据，业务完整性由人和 AI 核对"
+          ],
+          "responsibilities": [
+            "定义唯一受支持的设计格式",
+            "检查对象、树、流转、关系、引用及项目内路径",
+            "规范化内容并计算 rev"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、4、6 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/design.mjs",
+            "symbol": "normalizeDesign"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/validate.mjs",
+            "symbol": "validateDesign"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "f56f76cb9ca708112ad82d6aa6c72a974dd4963c5c5406b1004fd7dc1a2e6de6",
+              "path": "skills/arkigo/scripts/lib/design.mjs",
+              "symbol": "normalizeDesign"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "5fb6db96b4b85a84a8c24516a657c57941fbe1aa2bae11154e857d1bb250a810",
+              "path": "skills/arkigo/scripts/lib/validate.mjs",
+              "symbol": "validateDesign"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "model.contract-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "model.contract-tests",
+        "type": "acceptance",
+        "title": "模型约束与序列化回归",
+        "summary": "十种对象、六种说明块和九种关系可读取，坏结构和坏引用分开报告。",
+        "parent": "model",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "基于有效的小店设计和有意构造的无效变体"
+          ],
+          "then": [
+            "十种对象、六种说明块和九种关系可读取，坏结构和坏引用分开报告。",
+            "流程、树、状态、路径和关系错误有诊断，序列化保留业务数组顺序。"
+          ],
+          "when": "运行 npm run test:core，检查格式和约束用例"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 4、6 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/format.test.mjs",
+            "symbol": "格式、语义检查与规范化用例"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "model.safe-text-test",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "model.safe-text-test",
+        "type": "acceptance",
+        "title": "页面里的内容保持惰性",
+        "summary": "内容可读，运行时没有执行设计中文字。",
+        "parent": "model",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "设计数据含长文本和类似脚本的内容"
+          ],
+          "then": [
+            "内容可读，运行时没有执行设计中文字。"
+          ],
+          "when": "运行 npm run test:browser，检查各对象正文及危险文本用例"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、4.4 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs",
+            "symbol": "all object bodies and notes；empty, forty cards with a cycle, and long or dangerous text"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "practice",
+        "type": "module",
+        "title": "使用闭环与分发",
+        "summary": "指导 AI 从想法或代码建档，在开发前后与用户来回核对，并提供可复制安装包。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 50,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "boundaries": [
+            "AI 负责内容和判断，程序不替用户决策",
+            "包供技能客户端安装，离线页面交给人阅读"
+          ],
+          "responsibilities": [
+            "给 AI 提供按任务选读的指引",
+            "维护开工、回写、复查和拍板的协作约定",
+            "提供版本检查和独立安装"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 1、2、9、11 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/SKILL.md",
+            "symbol": "分工、先看这次是哪种情况"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/version.mjs",
+            "symbol": "version"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "e36e202211dac061b1064403188043a4a02b20d6061c437dd84b0c580c6a2a7a",
+              "path": "skills/arkigo/SKILL.md",
+              "symbol": "分工、先看这次是哪种情况"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "ad87dab2fd8c0f6fd8c1543e22a4ffa2de6b0b10f77f5f5f46a5700027d149c2",
+              "path": "skills/arkigo/scripts/commands/install.mjs",
+              "symbol": "install"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
+              "path": "skills/arkigo/scripts/commands/version.mjs",
+              "symbol": "version"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "add",
+      "id": "practice.boundary-review"
+    },
+    {
+      "op": "add",
+      "id": "practice.code-boundary"
+    },
+    {
+      "op": "update",
+      "id": "practice.install-test",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "practice.install-test",
+        "type": "acceptance",
+        "title": "独立安装与发布许可回归",
+        "summary": "两份许可证相同，安装副本携带许可证，版本为 2.0.0。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "系统临时目录内的新技能和新项目"
+          ],
+          "then": [
+            "两份许可证相同，安装副本携带许可证，版本为 2.0.0。",
+            "独立运行可建档、改设计、生成 HTML。"
+          ],
+          "when": "运行 core 安装用例，实际 install、npm ci、version、init、change 和 render"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "12 arity, duplicate flags, all exit codes and installer behavior"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice.workflow-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "practice.workflow-tests",
+        "type": "acceptance",
+        "title": "技能闭环与固定文本回归",
+        "summary": "项目规则、开工开头、拍板模板在真实命令与页面中可用。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "临时项目和离线页面含提议、选择和批注"
+          ],
+          "then": [
+            "项目规则、开工开头、拍板模板在真实命令与页面中可用。",
+            "决定写入、开发回写和复查存在可复跑的技术链。"
+          ],
+          "when": "运行四组测试的相应用例"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "init inserts literal rule text；uses only CLI commands"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/read.test.mjs",
+            "symbol": "context"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/readings.test.mjs",
+            "symbol": "决定模板"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs",
+            "symbol": "拍板往返"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs",
+            "symbol": "端到端流程"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "reading",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "reading",
+        "type": "module",
+        "title": "查设计与核对依据",
+        "summary": "按目标取开工材料或导出文档；列出提示、差异和需要复查的文件。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 30,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "boundaries": [
+            "不扫描仓库推断业务",
+            "指纹变化提示复查，是否符合设计由 AI 判断"
+          ],
+          "responsibilities": [
+            "按范围查询和分页",
+            "以固定顺序组织开工材料",
+            "展示历史与快照差异",
+            "核对依据文件并导出 Markdown"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 6、7、7.2 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/query.mjs",
+            "symbol": "query"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/context.mjs",
+            "symbol": "context"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/evidence.mjs",
+            "symbol": "designEvidence"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "0f1ca2743813565008c3881357b27d5cf3342cc7635ebbe4d9e5d4ae5a3ab5db",
+              "path": "skills/arkigo/scripts/commands/query.mjs",
+              "symbol": "query"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "fb72848272b8fdd9baa3377b2b1913df6edfbc823eb49ee54bee8c4d3b1ff587",
+              "path": "skills/arkigo/scripts/commands/context.mjs",
+              "symbol": "context"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "20adac35980b4c19c6ae98b4d15d892f3b627f94cabf09ecd57bd185ea696cb3",
+              "path": "skills/arkigo/scripts/lib/evidence.mjs",
+              "symbol": "designEvidence"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "reading.read-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "reading.read-tests",
+        "type": "acceptance",
+        "title": "有界读取、诊断、依据与导出回归",
+        "summary": "列表输出可分页，字节量有界；开工材料报告省略并能进一步读字段。",
+        "parent": "reading",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "设计含长 Unicode 文本、关系和不同状态的文件依据"
+          ],
+          "then": [
+            "列表输出可分页，字节量有界；开工材料报告省略并能进一步读字段。",
+            "依据变化和缺失可定位，Git 范围、Markdown 导出与字段比较有独立场景。"
+          ],
+          "when": "运行 npm run test:core 和 npm run test:e2e，检查查询、上下文及证据用例"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/read.test.mjs",
+            "symbol": "有界输出、查询、diff、context 和 Markdown"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "Git 依据、历史、退出码"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs",
+            "symbol": "回写与复查"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer",
+      "fields": [
+        "implementation.evidence",
+        "notes",
+        "sources"
+      ],
+      "before": {
+        "id": "viewer",
+        "type": "module",
+        "title": "离线阅读与拍板",
+        "summary": "把同一版本的设计呈现为地图、流程、清单、文档、进度、变更和拍板。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 40,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "boundaries": [
+            "浏览器只保存本地交互状态",
+            "项目设计由命令持久化，页面使用生成时的依据快照"
+          ],
+          "responsibilities": [
+            "生成可双击打开的静态阅读页面",
+            "提供层级导航、详情、搜索和目录",
+            "让用户暂存布局、选择和批注，并导出给 AI"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8、9 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/page.mjs",
+            "symbol": "buildPage"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/app.js",
+            "symbol": "render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/decisions.js",
+            "symbol": "renderDecisions"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "8e3c96704f510ac0ffa45372ec6a2860953e3dcc560d9035d871f672e2fbc1c2",
+              "path": "skills/arkigo/scripts/page.mjs",
+              "symbol": "buildPage"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "075b12d7a22ab823a808513026d8f476d53c0d72d14bdfa0f55c47e30e416a87",
+              "path": "skills/arkigo/assets/app.js",
+              "symbol": "render"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "1b53c230f944bed42930a094a73370d1ac935d554727145bacff59cb593b310f",
+              "path": "skills/arkigo/assets/readings/decisions.js",
+              "symbol": "renderDecisions"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.document",
+      "fields": [
+        "implementation.evidence",
+        "sources"
+      ],
+      "before": {
+        "id": "viewer.document",
+        "type": "screen",
+        "title": "文档",
+        "summary": "同一份内容按概述、角色和模块铺开，适合顺序阅读与打印。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "elements": [
+            "按归属树与类型展开对象；有文档目录、锚点和打印样式；正文和其他读法共用设计数据及详情呈现。"
+          ],
+          "purpose": "初读者从目标和范围读到流程、规则、验收和待定问题。",
+          "route": "#/document/<对象ID>",
+          "states": [
+            "切换和点击目录时定位目标对象。"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.5 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings/document.js",
+            "symbol": "registerRead 的 render"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/document.mjs",
+            "symbol": "documentTree"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/readings.css",
+            "symbol": "打印样式"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T15:07:22.354Z",
+              "hash": "cbf2ea9b0c158b036dca268031ce8ba57d2102eaa8a3ff55fade84b7409ad303",
+              "path": "skills/arkigo/assets/readings/document.js",
+              "symbol": "registerRead 的 render"
+            },
+            {
+              "checkedAt": "2026-11-20T15:07:22.354Z",
+              "hash": "012633e5b1dfe2bdf46db4de93521ff71d9bfcb672703379c5a18df41bfdf039",
+              "path": "skills/arkigo/assets/document.mjs",
+              "symbol": "documentTree"
+            },
+            {
+              "checkedAt": "2026-11-20T15:07:22.354Z",
+              "hash": "b60400ac28c6a5ddea1c452522b75a142886178d472262e6141bad3091637b63",
+              "path": "skills/arkigo/assets/readings.css",
+              "symbol": "打印样式"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.reading-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "viewer.reading-tests",
+        "type": "acceptance",
+        "title": "离线读法和交互回归",
+        "summary": "从 file URL 离线阅读，七种读法可切换，导航、数据、依据及状态保持一致。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "离线页面，桌面与 390 像素视口，含跨层关系、长内容与历史的样例"
+          ],
+          "then": [
+            "从 file URL 离线阅读，七种读法可切换，导航、数据、依据及状态保持一致。",
+            "地图分区与关系可查看，流程步骤标记、窄屏、键盘、深浅色、布局导入导出经过覆盖。",
+            "清单、文档、进度、变更和拍板覆盖空态、详情、对比及应用选择。"
+          ],
+          "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/readings.test.mjs",
+            "symbol": "各读法模型与打包逻辑"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/page.test.mjs",
+            "symbol": "多浏览器、键盘、窄屏和安全用例"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs",
+            "symbol": "各读法及决定回路"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs",
+            "symbol": "页面与文件快照"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "viewer.scale-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "viewer.scale-tests",
+        "type": "acceptance",
+        "title": "500 对象规模基准",
+        "summary": "页面可用不超过 1000ms，切换读法不超过 200ms，40 卡排版不超过 50ms。",
+        "parent": "viewer",
+        "status": "accepted",
+        "origin": "doc",
+        "body": {
+          "given": [
+            "合成设计有 500 个对象、800 条关系、5 层，首层可见 40 张卡片，使用无头 Chromium"
+          ],
+          "then": [
+            "页面可用不超过 1000ms，切换读法不超过 200ms，40 卡排版不超过 50ms。",
+            "记录实测，并保留超出目标的情形。"
+          ],
+          "when": "分别运行 tests/browser/benchmark.mjs 和 tests/browser/readings-benchmark.mjs"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 8.11 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/benchmark.mjs",
+            "symbol": "40 卡布局、页面可用计时"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings-benchmark.mjs",
+            "symbol": "读法切换计时"
+          }
+        ]
+      }
+    },
+    {
+      "op": "update",
+      "id": "workspace",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "workspace",
+        "type": "module",
+        "title": "建档与变更",
+        "summary": "创建项目设计；校验并登记每次内容修改，随后重生页面。",
+        "parent": "arkigo",
+        "group": "产品模块",
+        "order": 20,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "boundaries": [
+            "业务内容和决定由 AI 与人提供",
+            "页面生成失败时保留已成功写入的内容"
+          ],
+          "responsibilities": [
+            "定位项目和设计目录",
+            "读取并成组执行修改项",
+            "持久化设计、历史和布局，管理写锁",
+            "导入用户的决定文件"
+          ]
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 3、5、7.1、7.3 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/init.mjs",
+            "symbol": "init"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/change.mjs",
+            "symbol": "change"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/io.mjs",
+            "symbol": "withLock、writeBatch"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "89db40a174c416a4a2d4f519ce69470ce14101a3cc5ced46b1decb1fd990b4ba",
+              "path": "skills/arkigo/scripts/commands/init.mjs",
+              "symbol": "init"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "f2b644d97fe91ebb7c8d5bb3d8bea940ea132e1297b3b3b7fd37b39d37bd2b85",
+              "path": "skills/arkigo/scripts/commands/change.mjs",
+              "symbol": "change"
+            },
+            {
+              "checkedAt": "2026-11-20T14:57:49.193Z",
+              "hash": "c9f239540ac6c6f726419ad3105f1c67ee65592dd53c40fe03b47e2c443ff7f8",
+              "path": "skills/arkigo/scripts/lib/io.mjs",
+              "symbol": "withLock、writeBatch"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "workspace.change-tests",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "workspace.change-tests",
+        "type": "acceptance",
+        "title": "更改和并发写入回归",
+        "summary": "错误操作、试跑和基线冲突不发布；变更后可读历史。",
+        "parent": "workspace",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "已有设计、临时目录及不同基线和失败输入"
+          ],
+          "then": [
+            "错误操作、试跑和基线冲突不发布；变更后可读历史。",
+            "同一写锁协调并行请求；失败的页面生成有独立结果。",
+            "旧版本决定中的评论保留、不能应用的动作有报告。"
+          ],
+          "when": "运行 npm run test:core 和 npm run test:e2e"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "change、锁、布局、版本与安装用例"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs",
+            "symbol": "自动生成、失败恢复、编辑器路径和锁用例"
+          }
+        ]
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.code-boundary",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.boundary-review",
+        "to": "practice.code-boundary",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.context",
+        "to": "model.objects",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.flow",
+        "to": "model.relations",
+        "type": "depends_on"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply#candidate",
+        "to": "model.validation",
+        "type": "governed_by"
+      }
+    }
+  ]
+}

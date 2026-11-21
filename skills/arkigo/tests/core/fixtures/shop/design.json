@@ -1,0 +1,343 @@
+{
+  "format": "arkigo/2",
+  "id": "shop",
+  "title": "邻里下单",
+  "objects": [
+    {
+      "id": "shop",
+      "type": "system",
+      "title": "邻里下单",
+      "summary": "小店接受线上下单，由店员自提交付。",
+      "parent": null,
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "audience": ["附近居民","门店员工"],
+        "goals": ["减少电话漏单"],
+        "scopeIn": ["下单与到店自提"],
+        "scopeOut": ["配送与线上支付"],
+        "assumptions": ["顾客到店付款"],
+        "success": ["每个订单都有可核对的取货码"]
+      }
+    },
+    {
+      "id": "customer",
+      "type": "actor",
+      "title": "顾客",
+      "summary": "浏览商品并提交订单。",
+      "parent": "shop",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"description":"使用手机浏览门店菜单。","goals":["收到取货信息"]}
+    },
+    {
+      "id": "staff",
+      "type": "actor",
+      "title": "店员",
+      "summary": "备货并交付订单。",
+      "parent": "shop",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"description":"使用门店工作台。","goals":["减少错发和重复发货"]}
+    },
+    {
+      "id": "checkout",
+      "type": "module",
+      "title": "下单",
+      "summary": "从购物车生成订单。",
+      "parent": "shop",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"responsibilities":["校验库存","创建订单"],"outputs":["订单号"]},
+      "notes": [
+        {"type":"text","text":"**现货**商品可直接下单，参见 [[place-order#inspect|库存检查]]。"},
+        {"type":"list","items":["确认清单","提交订单"],"ordered":true},
+        {"type":"table","columns":["状态","说明"],"rows":[["缺货","回到购物车"]]},
+        {"type":"code","text":"POST /orders","lang":"http"},
+        {"type":"callout","tone":"info","text":"先到店付款。"}
+      ],
+      "sources": [{"kind":"conversation","ref":"门店访谈记录 · 第一次试营业"}]
+    },
+    {
+      "id": "pickup",
+      "type": "module",
+      "title": "自提履约",
+      "summary": "从接单备货到核销交付。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"responsibilities":["备货","核销"]}
+    },
+    {
+      "id": "place-order",
+      "type": "flow",
+      "title": "提交订单",
+      "summary": "库存足够才创建订单。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "trigger": "顾客点击提交",
+        "steps": [
+          {
+            "id": "inspect",
+            "title": "检查库存",
+            "action": "读取 [[inventory|库存]]。",
+            "actor": "customer",
+            "failure": "返回缺货明细，保留购物车。"
+          },
+          {"id":"place","title":"创建订单","action":"写入 [[order]]。"},
+          {"id":"retry","title":"提示缺货","action":"回到购物车。"}
+        ],
+        "start": "inspect",
+        "ends": ["place","retry"],
+        "transitions": [
+          {"from":"inspect","to":"place","when":"有货"},
+          {"from":"inspect","to":"retry","when":"缺货"}
+        ]
+      }
+    },
+    {
+      "id": "hand-over",
+      "type": "flow",
+      "title": "交付商品",
+      "summary": "核对订单与取货码。",
+      "parent": "pickup",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "steps": [
+          {
+            "id": "handover",
+            "title": "核销取货码",
+            "action": "店员确认商品已交付。",
+            "actor": "staff",
+            "failure": "提示取货码无效。"
+          }
+        ],
+        "start": "handover",
+        "ends": ["handover"]
+      }
+    },
+    {
+      "id": "stock-limit",
+      "type": "rule",
+      "title": "库存约束",
+      "summary": "库存不可扣为负数。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"constraint":"写订单时原子校验库存。","exceptions":["测试商品无实际库存。"]}
+    },
+    {
+      "id": "one-pickup",
+      "type": "rule",
+      "title": "单次核销",
+      "summary": "同一个取货码只能核销一次。",
+      "parent": "pickup",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"when":"顾客到店取货","constraint":"核销后拒绝重复提交。"}
+    },
+    {
+      "id": "order",
+      "type": "entity",
+      "title": "订单",
+      "summary": "记录商品和交付状态。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "fields": [{"name":"id","type":"UUID","required":true},{"name":"pickupCode","type":"string"}],
+        "states": [{"name":"待备货"},{"name":"待领取"},{"name":"已交付"}],
+        "stateTransitions": [{"from":"待备货","to":"待领取","when":"备货完成"},{"from":"待领取","to":"已交付","when":"核销成功"}],
+        "ownership": "门店"
+      }
+    },
+    {
+      "id": "inventory",
+      "type": "entity",
+      "title": "商品库存",
+      "summary": "记录各商品的可售数量。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "fields": [{"name":"sku","type":"string"},{"name":"available","type":"integer"}],
+        "retention": "保留最近一次盘点结果。"
+      }
+    },
+    {
+      "id": "create-order",
+      "type": "interface",
+      "title": "创建订单接口",
+      "summary": "接收购物车并生成订单。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "kind": "http",
+        "signature": "POST /orders",
+        "request": [{"name":"cart","type":"Cart","required":true}],
+        "response": [{"name":"orderId","type":"UUID"}],
+        "errors": [{"code":"409","when":"库存不足"}],
+        "auth": "顾客会话"
+      }
+    },
+    {
+      "id": "redeem",
+      "type": "interface",
+      "title": "核销接口",
+      "summary": "幂等记录交付。",
+      "parent": "pickup",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "kind": "http",
+        "signature": "POST /pickup/redeem",
+        "request": [{"name":"code","type":"string"}],
+        "response": [{"name":"redeemed","type":"boolean"}]
+      }
+    },
+    {
+      "id": "cart",
+      "type": "screen",
+      "title": "购物车",
+      "summary": "确认订单和商品价格。",
+      "parent": "checkout",
+      "status": "proposed",
+      "origin": "user",
+      "body": {"route":"/cart","purpose":"提交下单","elements":["商品清单","提交按钮"],"states":["空购物车","库存不足"]}
+    },
+    {
+      "id": "console",
+      "type": "screen",
+      "title": "门店工作台",
+      "summary": "查看待领取订单。",
+      "parent": "pickup",
+      "status": "proposed",
+      "origin": "user",
+      "body": {"route":"/staff/pickup","elements":["订单队列","取货码输入"],"states":["排队中","核销成功"]}
+    },
+    {
+      "id": "stock-acceptance",
+      "type": "acceptance",
+      "title": "缺货不扣库存",
+      "summary": "验证库存不足路径。",
+      "parent": "checkout",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"given":["最后一件商品已售出"],"when":"另一名顾客提交订单","then":["不创建订单","保留原购物车"]}
+    },
+    {
+      "id": "pickup-acceptance",
+      "type": "acceptance",
+      "title": "重复核销被拒绝",
+      "summary": "验证取货码只能使用一次。",
+      "parent": "pickup",
+      "status": "accepted",
+      "origin": "user",
+      "body": {"given":["订单已经交付"],"when":"店员重新提交同一取货码","then":["返回已核销"]}
+    },
+    {
+      "id": "stock-window",
+      "type": "decision",
+      "title": "预留库存多久",
+      "summary": "等待门店决定购物车是否预留库存。",
+      "parent": "checkout",
+      "status": "proposed",
+      "origin": "user",
+      "body": {"question":"提交前要不要预留库存？","options":[{"title":"不预留"},{"title":"预留 10 分钟"}],"chosen":null}
+    },
+    {
+      "id": "pickup-reminder",
+      "type": "decision",
+      "title": "取货通知渠道",
+      "summary": "门店决定以订单页提示为主。",
+      "parent": "pickup",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "question": "如何提示自提？",
+        "options": [{"title":"订单页"},{"title":"短信"}],
+        "chosen": 0,
+        "rationale": "顾客无需提供手机号码。",
+        "decidedBy": "店主",
+        "decidedAt": "2026-11-20T09:00:00Z"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "pickup",
+      "to": "checkout",
+      "type": "depends_on"
+    },
+    {
+      "from": "place-order#place",
+      "to": "create-order",
+      "type": "calls"
+    },
+    {
+      "from": "place-order#inspect",
+      "to": "inventory",
+      "type": "reads"
+    },
+    {
+      "from": "place-order#place",
+      "to": "order",
+      "type": "writes"
+    },
+    {
+      "from": "place-order",
+      "to": "stock-limit",
+      "type": "governed_by"
+    },
+    {
+      "from": "stock-acceptance",
+      "to": "stock-limit",
+      "type": "verifies"
+    },
+    {
+      "from": "pickup-acceptance",
+      "to": "one-pickup",
+      "type": "verifies"
+    },
+    {
+      "from": "stock-window",
+      "to": "checkout",
+      "type": "blocks"
+    },
+    {
+      "from": "customer",
+      "to": "cart",
+      "type": "uses"
+    },
+    {
+      "from": "staff",
+      "to": "console",
+      "type": "uses"
+    },
+    {
+      "from": "cart",
+      "to": "checkout",
+      "type": "relates",
+      "label": "下单入口"
+    },
+    {
+      "from": "hand-over",
+      "to": "redeem",
+      "type": "calls"
+    },
+    {
+      "from": "hand-over",
+      "to": "one-pickup",
+      "type": "governed_by"
+    },
+    {
+      "from": "pickup-acceptance",
+      "to": "hand-over#handover",
+      "type": "verifies"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T14:59:35.860Z",
+  "by": "ai",
+  "reason": "记录设计格式、状态和校验边界，说明同一份内容怎样供人和 AI 读取",
+  "base": "41dae225f4e7",
+  "result": "0248c01aaaf9",
+  "changes": [
+    {
+      "op": "add",
+      "id": "model.canonical"
+    },
+    {
+      "op": "add",
+      "id": "model.contract-tests"
+    },
+    {
+      "op": "add",
+      "id": "model.design"
+    },
+    {
+      "op": "add",
+      "id": "model.markup"
+    },
+    {
+      "op": "add",
+      "id": "model.objects"
+    },
+    {
+      "op": "add",
+      "id": "model.records"
+    },
+    {
+      "op": "add",
+      "id": "model.relations"
+    },
+    {
+      "op": "add",
+      "id": "model.safe-text-test"
+    },
+    {
+      "op": "add",
+      "id": "model.validation"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.canonical",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.markup",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.validation",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.design",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.objects",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.records",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model",
+        "to": "model.relations",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.canonical",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.design",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.objects",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.records",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.relations",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.contract-tests",
+        "to": "model.validation",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.safe-text-test",
+        "to": "model.markup",
+        "type": "verifies"
+      }
+    }
+  ]
+}

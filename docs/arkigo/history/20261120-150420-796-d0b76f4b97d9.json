@@ -1,0 +1,283 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:04:20.796Z",
+  "by": "ai",
+  "reason": "明确十三条命令的共同约定和有界读取机制，让开工与依据复查可以按对象进行",
+  "base": "fd840068c871",
+  "result": "d0b76f4b97d9",
+  "changes": [
+    {
+      "op": "add",
+      "id": "reading.check"
+    },
+    {
+      "op": "add",
+      "id": "reading.cli"
+    },
+    {
+      "op": "add",
+      "id": "reading.context"
+    },
+    {
+      "op": "add",
+      "id": "reading.context-reach"
+    },
+    {
+      "op": "add",
+      "id": "reading.diagnostics"
+    },
+    {
+      "op": "add",
+      "id": "reading.diff"
+    },
+    {
+      "op": "add",
+      "id": "reading.export"
+    },
+    {
+      "op": "add",
+      "id": "reading.history"
+    },
+    {
+      "op": "add",
+      "id": "reading.query"
+    },
+    {
+      "op": "add",
+      "id": "reading.read-tests"
+    },
+    {
+      "op": "add",
+      "id": "reading.review"
+    },
+    {
+      "op": "add",
+      "id": "reading.verify"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.check",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.cli",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.context",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.diff",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.export",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.history",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.query",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.verify",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "model",
+        "type": "depends_on",
+        "label": "按同一协议读取"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "model.validation",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "reading.diagnostics",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "model.design",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "model.records",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading",
+        "to": "workspace.history-data",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.context-reach",
+        "to": "reading.context",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.check",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.cli",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.context",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.diagnostics",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.diff",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.export",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.history",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.query",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.review",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.read-tests",
+        "to": "reading.verify",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.review",
+        "to": "reading.verify",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "reading.review",
+        "to": "model.records",
+        "type": "writes"
+      }
+    }
+  ]
+}

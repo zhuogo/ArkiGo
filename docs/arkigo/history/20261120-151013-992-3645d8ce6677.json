@@ -1,0 +1,301 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:10:13.992Z",
+  "by": "ai",
+  "reason": "补全从建档、开发回写到用户拍板的协作流程，并记录用户已确定的许可证与版权人",
+  "base": "60ee3efddc10",
+  "result": "3645d8ce6677",
+  "changes": [
+    {
+      "op": "add",
+      "id": "practice.ai-text"
+    },
+    {
+      "op": "add",
+      "id": "practice.design-review"
+    },
+    {
+      "op": "add",
+      "id": "practice.develop"
+    },
+    {
+      "op": "add",
+      "id": "practice.feedback"
+    },
+    {
+      "op": "add",
+      "id": "practice.handoff"
+    },
+    {
+      "op": "add",
+      "id": "practice.install"
+    },
+    {
+      "op": "add",
+      "id": "practice.install-test"
+    },
+    {
+      "op": "add",
+      "id": "practice.license"
+    },
+    {
+      "op": "add",
+      "id": "practice.provenance"
+    },
+    {
+      "op": "add",
+      "id": "practice.start"
+    },
+    {
+      "op": "add",
+      "id": "practice.version"
+    },
+    {
+      "op": "add",
+      "id": "practice.workflow-tests"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "assistant",
+        "to": "reading.cli",
+        "type": "uses"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "person",
+        "to": "viewer.decisions",
+        "type": "uses"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.handoff",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.install",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.version",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "reading.context",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "workspace.change",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "workspace.init",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "reading",
+        "type": "depends_on",
+        "label": "开工及复查"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "viewer",
+        "type": "depends_on",
+        "label": "提交用户的决定"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "workspace",
+        "type": "depends_on",
+        "label": "写回设计"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.ai-text",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "practice.provenance",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "model.records",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice",
+        "to": "workspace.decisions-data",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.design-review",
+        "to": "practice.provenance",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.design-review",
+        "to": "practice.start",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.develop#read",
+        "to": "reading.context",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.develop#record",
+        "to": "model.records",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.feedback#apply",
+        "to": "workspace.import",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.feedback#review",
+        "to": "practice.provenance",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.install-test",
+        "to": "practice.install",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.install-test",
+        "to": "practice.version",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.start",
+        "to": "practice.provenance",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.workflow-tests",
+        "to": "practice",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.workflow-tests",
+        "to": "practice.ai-text",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.workflow-tests",
+        "to": "practice.develop",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.workflow-tests",
+        "to": "practice.feedback",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.workflow-tests",
+        "to": "practice.handoff",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.decisions-data",
+        "type": "reads"
+      }
+    }
+  ]
+}

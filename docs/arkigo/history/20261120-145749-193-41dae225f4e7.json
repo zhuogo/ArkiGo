@@ -1,0 +1,94 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T14:57:49.193Z",
+  "by": "ai",
+  "reason": "说明 ArkiGo 服务的人、设计边界和模块分工，让阅读从全局开始",
+  "base": "c4af5ca5e688",
+  "result": "41dae225f4e7",
+  "changes": [
+    {
+      "op": "update",
+      "id": "arkigo",
+      "fields": [
+        "body.assumptions",
+        "body.audience",
+        "body.goals",
+        "body.scopeIn",
+        "body.scopeOut",
+        "body.success",
+        "sources",
+        "summary"
+      ],
+      "before": {
+        "id": "arkigo",
+        "type": "system",
+        "title": "ArkiGo",
+        "summary": "",
+        "parent": null,
+        "status": "accepted",
+        "origin": "user",
+        "body": {}
+      }
+    },
+    {
+      "op": "add",
+      "id": "assistant"
+    },
+    {
+      "op": "add",
+      "id": "model"
+    },
+    {
+      "op": "add",
+      "id": "person"
+    },
+    {
+      "op": "add",
+      "id": "practice"
+    },
+    {
+      "op": "add",
+      "id": "reading"
+    },
+    {
+      "op": "add",
+      "id": "viewer"
+    },
+    {
+      "op": "add",
+      "id": "workspace"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "assistant",
+        "to": "practice",
+        "type": "uses"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "assistant",
+        "to": "reading",
+        "type": "uses"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "assistant",
+        "to": "workspace",
+        "type": "uses"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "person",
+        "to": "viewer",
+        "type": "uses"
+      }
+    }
+  ]
+}

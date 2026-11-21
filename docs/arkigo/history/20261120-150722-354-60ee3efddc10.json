@@ -1,0 +1,320 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:07:22.354Z",
+  "by": "ai",
+  "reason": "将地图、流程和其余读法逐项说明，明确离线页面、批注出口和规模目标",
+  "base": "d0b76f4b97d9",
+  "result": "60ee3efddc10",
+  "changes": [
+    {
+      "op": "add",
+      "id": "viewer.build"
+    },
+    {
+      "op": "add",
+      "id": "viewer.changes"
+    },
+    {
+      "op": "add",
+      "id": "viewer.decisions"
+    },
+    {
+      "op": "add",
+      "id": "viewer.detail"
+    },
+    {
+      "op": "add",
+      "id": "viewer.document"
+    },
+    {
+      "op": "add",
+      "id": "viewer.flow"
+    },
+    {
+      "op": "add",
+      "id": "viewer.inventory"
+    },
+    {
+      "op": "add",
+      "id": "viewer.map"
+    },
+    {
+      "op": "add",
+      "id": "viewer.navigation"
+    },
+    {
+      "op": "add",
+      "id": "viewer.offline"
+    },
+    {
+      "op": "add",
+      "id": "viewer.pending-scope"
+    },
+    {
+      "op": "add",
+      "id": "viewer.performance"
+    },
+    {
+      "op": "add",
+      "id": "viewer.progress"
+    },
+    {
+      "op": "add",
+      "id": "viewer.reading-tests"
+    },
+    {
+      "op": "add",
+      "id": "viewer.scale-tests"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "viewer.build",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "model",
+        "type": "depends_on",
+        "label": "呈现结构化对象"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "model.markup",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "viewer.offline",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "model.design",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "model.records",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "workspace.history-data",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer",
+        "to": "workspace.layout-data",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.decisions",
+        "to": "workspace.decisions-data",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.map",
+        "to": "viewer.navigation",
+        "type": "depends_on"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.map",
+        "to": "viewer.changes",
+        "type": "relates",
+        "label": "定位被修改的对象"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.pending-scope",
+        "to": "reading.diagnostics",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.pending-scope",
+        "to": "viewer.decisions",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.performance",
+        "to": "viewer",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.performance",
+        "to": "viewer.scale-tests",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.build",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.changes",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.decisions",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.detail",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.document",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.flow",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.inventory",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.map",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.navigation",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.offline",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.reading-tests",
+        "to": "viewer.progress",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.scale-tests",
+        "to": "viewer",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.scale-tests",
+        "to": "viewer.document",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.scale-tests",
+        "to": "viewer.inventory",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "viewer.scale-tests",
+        "to": "viewer.map",
+        "type": "verifies"
+      }
+    }
+  ]
+}

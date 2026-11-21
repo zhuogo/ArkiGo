@@ -1,0 +1,343 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:19:26.953Z",
+  "by": "ai",
+  "reason": "记录标题标记的实际展示差异，说明混用排序值的行为，并登记自身设计的回读验收",
+  "base": "f58523aa5ec0",
+  "result": "596909f1f47f",
+  "changes": [
+    {
+      "op": "update",
+      "id": "model.markup",
+      "fields": [
+        "body.constraint",
+        "implementation.evidence",
+        "notes"
+      ],
+      "before": {
+        "id": "model.markup",
+        "type": "rule",
+        "title": "内容使用有限标记",
+        "summary": "正文和说明只识别粗体、行内代码与对象引用，图片从设计资产目录加载。",
+        "parent": "model",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "constraint": "只解析粗体、行内代码、对象和流程步骤引用；标题和摘要按纯文字显示。任何正文字符串都不按 HTML 或脚本执行。",
+          "when": "呈现正文或说明时"
+        },
+        "notes": [
+          {
+            "columns": [
+              "说明块",
+              "字段"
+            ],
+            "rows": [
+              [
+                "text",
+                "text"
+              ],
+              [
+                "list",
+                "items、ordered"
+              ],
+              [
+                "table",
+                "columns、rows"
+              ],
+              [
+                "code",
+                "text、lang"
+              ],
+              [
+                "image",
+                "path、caption"
+              ],
+              [
+                "callout",
+                "tone（info 或 warn）、text"
+              ]
+            ],
+            "type": "table"
+          },
+          {
+            "text": "块可带 title。图片和 screen.media 的路径相对设计下的 assets。引用使用双方括号包住 ID，可在竖线后指定显示文字；流程步骤在对象 ID 后用井号接步骤 ID。仅在行内代码和代码块中展示字面用法时，要留意校验器对文本的引用扫描。",
+            "type": "text"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、4.4 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/inline.mjs",
+            "symbol": "references、strings"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/details.js",
+            "symbol": "内容块和正文呈现"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/markdown.mjs",
+            "symbol": "prose、objectMarkdown"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:59:35.860Z",
+              "hash": "4fa2067851f942190ea0d166486cc30973a490fd71ea51163649a1cf33a6b915",
+              "path": "skills/arkigo/scripts/lib/inline.mjs",
+              "symbol": "references、strings"
+            },
+            {
+              "checkedAt": "2026-11-20T14:59:35.860Z",
+              "hash": "1ec9a82185ad74e4a71c7d3af0acd93f9db01f46d2829c23118634f4f392832a",
+              "path": "skills/arkigo/assets/details.js",
+              "symbol": "内容块和正文呈现"
+            },
+            {
+              "checkedAt": "2026-11-20T14:59:35.860Z",
+              "hash": "aab104cc26bacad82bef03036549682cc8dcf2f4a764e0966e8e83dae467c1b8",
+              "path": "skills/arkigo/scripts/lib/markdown.mjs",
+              "symbol": "prose、objectMarkdown"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "model.objects",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "model.objects",
+        "type": "entity",
+        "title": "十类设计对象",
+        "summary": "每个对象用稳定 ID、归属、结构化正文和出处说明一项设计。",
+        "parent": "model",
+        "order": 20,
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "fields": [
+            {
+              "description": "1–64 字符。小写字母或数字开头，可含点、下划线和连字符。重命名、移动保持 ID。",
+              "name": "id",
+              "required": true,
+              "type": "字符串"
+            },
+            {
+              "description": "标题非空且最长 80 字符，摘要最长 300，超过 90 有提醒。",
+              "name": "type, title, summary",
+              "required": true,
+              "type": "枚举和字符串"
+            },
+            {
+              "description": "形成单根树；分区和同层阅读顺序可选。",
+              "name": "parent, group, order",
+              "required": true,
+              "type": "ID 或空、字符串、数值"
+            },
+            {
+              "description": "proposed、accepted、retired；user、ai、code、doc。两组独立。",
+              "name": "status, origin",
+              "required": true,
+              "type": "枚举"
+            },
+            {
+              "description": "按类型的正文、补充内容块和出处。",
+              "name": "body, notes, sources",
+              "required": true,
+              "type": "对象与可选数组"
+            },
+            {
+              "description": "各自的适用类型、状态及证据见实现与验收记录。",
+              "name": "implementation, verification",
+              "type": "可选对象"
+            }
+          ],
+          "ownership": "AI 提供对象和依据，程序通过修改项校验后存入设计。",
+          "stateTransitions": [
+            {
+              "from": "proposed",
+              "to": "accepted",
+              "when": "接受提议或为待定项记录选项"
+            },
+            {
+              "from": "proposed",
+              "to": "retired",
+              "when": "用户否决"
+            },
+            {
+              "from": "accepted",
+              "to": "retired",
+              "when": "用户明确作废"
+            }
+          ],
+          "states": [
+            {
+              "description": "等用户确认",
+              "name": "proposed"
+            },
+            {
+              "description": "已接受或来自既成事实",
+              "name": "accepted"
+            },
+            {
+              "description": "已否决或作废，保留记录",
+              "name": "retired"
+            }
+          ]
+        },
+        "notes": [
+          {
+            "columns": [
+              "类型",
+              "正文表达"
+            ],
+            "rows": [
+              [
+                "system",
+                "用户、目标、范围内外、成功标准、假设。唯一树根。"
+              ],
+              [
+                "actor",
+                "角色说明和目标。"
+              ],
+              [
+                "module",
+                "职责、边界、输入、输出。"
+              ],
+              [
+                "flow",
+                "触发、前置条件、非空 steps、start、非空 ends、transitions。步骤有 id、标题、动作，可写角色、输入输出和失败处理；流转写 from、to、条件。"
+              ],
+              [
+                "rule",
+                "约束必填，可写适用时机、例外、理由。"
+              ],
+              [
+                "entity",
+                "字段、状态、状态流转、写入方和保留策略。字段有名称、类型、必填与说明。"
+              ],
+              [
+                "interface",
+                "调用签名必填；可写 http、event、function、cli、other 及请求、响应、错误、调用权限。"
+              ],
+              [
+                "screen",
+                "路由、用途、控件、界面状态、目录内媒体。"
+              ],
+              [
+                "acceptance",
+                "可选 given、when、非空 then。"
+              ],
+              [
+                "decision",
+                "问题必填，选项含标题和说明。chosen 是从零开始的下标；未定可空或省略，结论可记理由、人、时间。"
+              ]
+            ],
+            "type": "table"
+          },
+          {
+            "text": "出处可为项目相对文件、外部文档名称与章节、带日期的用户原话或 URL。文件项的 symbol 用于定位函数、类、章节等。",
+            "title": "出处",
+            "type": "text"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 4.2–4.4 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/schemas/design-v2.schema.json",
+            "symbol": "顶层、definitions.object 和各类型 body"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/lib/validate.mjs",
+            "symbol": "validateDesign、schemaIssues、flowIssues、pathIssues"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T14:59:35.860Z",
+              "hash": "c84b20374b308aa1709c5b6adda613ae44dc7e45bb9f845dfce70121811ae5db",
+              "path": "skills/arkigo/schemas/design-v2.schema.json",
+              "symbol": "顶层、definitions.object 和各类型 body"
+            },
+            {
+              "checkedAt": "2026-11-20T14:59:35.860Z",
+              "hash": "5fb6db96b4b85a84a8c24516a657c57941fbe1aa2bae11154e857d1bb250a810",
+              "path": "skills/arkigo/scripts/lib/validate.mjs",
+              "symbol": "validateDesign、schemaIssues、flowIssues、pathIssues"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "add",
+      "id": "model.title-markup"
+    },
+    {
+      "op": "update",
+      "id": "practice.design-review",
+      "fields": [
+        "verification"
+      ],
+      "before": {
+        "id": "practice.design-review",
+        "type": "acceptance",
+        "title": "现状设计有可追溯出处",
+        "summary": "各模块可定位职责、出处、验收，未知问题带选项。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "doc",
+        "body": {
+          "given": [
+            "已有代码、文档和用户决定"
+          ],
+          "then": [
+            "各模块可定位职责、出处、验收，未知问题带选项。"
+          ],
+          "when": "按已有项目路线建档，再用 query、context、export md、check 和 verify 回读"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/references/existing-system.md",
+            "symbol": "三种信息分开记、步骤"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/references/content.md",
+            "symbol": "核对原有资料没有漏掉、交付前自己读一遍"
+          }
+        ]
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "model.title-markup",
+        "to": "model.markup",
+        "type": "blocks"
+      }
+    }
+  ]
+}

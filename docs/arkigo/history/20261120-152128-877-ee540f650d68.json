@@ -1,0 +1,284 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:21:28.877Z",
+  "by": "ai",
+  "reason": "记录项目规则片段与指定原文的措辞差异，并单独登记逐字验收结果",
+  "base": "596909f1f47f",
+  "result": "ee540f650d68",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.ai-text",
+      "fields": [
+        "implementation.evidence",
+        "implementation.note",
+        "implementation.status"
+      ],
+      "before": {
+        "id": "practice.ai-text",
+        "type": "rule",
+        "title": "交给 AI 的说明逐字保持",
+        "summary": "项目规则、开工材料开头和拍板复制文本使用固定原文。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "constraint": "保留固定原文，只替换目录、版本、对象、选项和理由等占位符。技能指引与这些文字的措辞由用户指定的作者定稿。",
+          "when": "生成项目规则、开工 Markdown 或页面复制结果时"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 11.1、11.2、11.3 节"
+          },
+          {
+            "kind": "conversation",
+            "ref": "2026-11-20 「像提示词，这种关键的信息，你可以亲自写」。交给另一个 AI 执行的文字与技能指引定稿后逐字使用。"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/init.mjs",
+            "symbol": "rules、updateRules"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/decisions.mjs",
+            "symbol": "decisionPrompt、decisionLine"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "89db40a174c416a4a2d4f519ce69470ce14101a3cc5ced46b1decb1fd990b4ba",
+              "path": "skills/arkigo/scripts/commands/init.mjs",
+              "symbol": "rules、updateRules"
+            },
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "fb72848272b8fdd9baa3377b2b1913df6edfbc823eb49ee54bee8c4d3b1ff587",
+              "path": "skills/arkigo/scripts/commands/context.mjs",
+              "symbol": "prelude"
+            },
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "d408245f7ca7d2ff6d5271e3fe9f6add504e23d76cf3fffadd1ae961b1dcd473",
+              "path": "skills/arkigo/assets/decisions.mjs",
+              "symbol": "decisionPrompt、decisionLine"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "update",
+      "id": "practice.handoff",
+      "fields": [
+        "notes"
+      ],
+      "before": {
+        "id": "practice.handoff",
+        "type": "interface",
+        "title": "项目规则与拍板指令",
+        "summary": "项目规则约定代码前后同步设计；拍板指令写明所见版本和后续动作。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "kind": "other",
+          "signature": "init 写规则片段；页面「复制给 AI」输出包含对象和 rev 的纯文本"
+        },
+        "notes": [
+          {
+            "lang": "markdown",
+            "text": "<!-- arkigo:start -->\n## 项目设计\n\n这个项目的设计只有一份，放在 `{dir}/design.json`，由 ArkiGo 技能管理。需求、模块、流程、规则、数据、接口、界面、验收和还没定的问题都在里面，项目里没有另外的需求文档和设计文档；用户通过 `{dir}/index.html` 阅读和拍板。设计和代码对得上，这份设计才有用，所以每次改代码请按下面的顺序做。\n\n- 动手之前先读设计。用 arkigo 技能的 `context <对象id>` 取得要改的那部分的材料，里面有它的规则、验收、数据、接口和还没定的问题；不知道对象 id 时先用 `query --search <关键词>` 找。\n- 要做的事设计里没有，或者和设计不一致时，先用 `change` 把设计改成要做的样子，再写代码。用户已经明确要求的改动可以改完设计直接开工；你自己提出的改动保持「提议」状态，告诉用户改了什么，等用户认可。\n- 写完代码后回写。用 `change` 记录实现情况和代码位置；实际跑过的验收记录结果，没跑过的不要写成通过。\n- 被设计里还没定的问题挡住时，停下来问用户，不要替用户选。\n- `design.json` 只通过 arkigo 技能的命令修改，不要直接编辑；也不要另写需求文档或设计文档，该写的内容写进设计。\n<!-- arkigo:end -->",
+            "title": "项目规则片段",
+            "type": "code"
+          },
+          {
+            "lang": "text",
+            "text": "我在 ArkiGo 页面上做了下面这些决定，请用 arkigo 技能把它们写进设计。\n\n设计目录：{dir}\n我看到的版本：{rev}\n\n1. 接受「{标题}」（{id}）\n2. 否决「{标题}」（{id}）。理由：{理由}\n3. 「{问题}」（{id}）选第 {序号} 项「{选项标题}」。理由：{理由}\n4. 对「{标题}」（{id}）的批注：{批注}\n\n请这样处理：接受、否决和选择直接用 change 写入，原因写「用户在页面上拍板」。批注是我的意见，请先读相关内容再处理：意见明确的按它修改；需要你来设计、或有不止一种改法的，把你的方案作为提议写进设计，等我确认。如果设计现在的版本和我看到的不一样，先看这几个对象有没有变化，变了的先问我再写。做完后告诉我写入了哪些、哪些没写入以及原因。",
+            "title": "拍板复制模板",
+            "type": "code"
+          },
+          {
+            "text": "init 在 AGENTS.md 和已存在的 CLAUDE.md 写入标记范围，保留外围字节；--no-rules 跳过。开工材料开头见 [[reading.context]]。决定文字依操作顺序编号，选项序号从 1 开始，文件和 decide 从 0 开始。没有理由时省去理由半句。",
+            "type": "text"
+          }
+        ],
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 11.1、11.3 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/init.mjs",
+            "symbol": "rules、updateRules"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/assets/decisions.mjs",
+            "symbol": "decisionPrompt、decisionLine"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "89db40a174c416a4a2d4f519ce69470ce14101a3cc5ced46b1decb1fd990b4ba",
+              "path": "skills/arkigo/scripts/commands/init.mjs",
+              "symbol": "rules、updateRules"
+            },
+            {
+              "checkedAt": "2026-11-20T15:10:13.992Z",
+              "hash": "d408245f7ca7d2ff6d5271e3fe9f6add504e23d76cf3fffadd1ae961b1dcd473",
+              "path": "skills/arkigo/assets/decisions.mjs",
+              "symbol": "decisionPrompt、decisionLine"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    },
+    {
+      "op": "add",
+      "id": "practice.init-wording"
+    },
+    {
+      "op": "add",
+      "id": "practice.literal-review"
+    },
+    {
+      "op": "update",
+      "id": "practice.workflow-tests",
+      "fields": [
+        "body.then"
+      ],
+      "before": {
+        "id": "practice.workflow-tests",
+        "type": "acceptance",
+        "title": "技能闭环与固定文本回归",
+        "summary": "项目规则、开工开头、拍板模板在真实命令与页面中可用。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "临时项目和离线页面含提议、选择和批注"
+          ],
+          "then": [
+            "项目规则、开工开头、拍板模板在真实命令与页面中可用。",
+            "决定写入、开发回写和复查存在可复跑的技术链。"
+          ],
+          "when": "运行四组测试的相应用例"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "init inserts literal rule text；uses only CLI commands"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/read.test.mjs",
+            "symbol": "context"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/page/readings.test.mjs",
+            "symbol": "决定模板"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/browser/readings.test.mjs",
+            "symbol": "拍板往返"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/e2e/workflow.test.mjs",
+            "symbol": "端到端流程"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-20T15:14:25.556Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/read.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/page/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/browser/readings.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
+            }
+          ],
+          "note": "npm test，core 98、page 20、browser 45、e2e 11，全部通过。",
+          "status": "passed"
+        }
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.init-wording",
+        "to": "practice.ai-text",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.literal-review",
+        "to": "practice.ai-text",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.literal-review",
+        "to": "practice.handoff",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.literal-review",
+        "to": "reading.context",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.literal-review",
+        "to": "viewer.decisions",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "practice.literal-review",
+        "to": "workspace.init",
+        "type": "verifies"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1859 @@
+{
+  "format": "arkigo/2",
+  "id": "clinic",
+  "title": "青禾诊所",
+  "objects": [
+    {
+      "id": "appointment",
+      "type": "entity",
+      "title": "预约单",
+      "summary": "保存就诊人、号源、凭证及预约状态。第三版记录候诊状态及凭证发放渠道。",
+      "parent": "reserve",
+      "group": "业务数据",
+      "order": 4,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "预约单唯一标识",
+            "name": "id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "关联 [[slot]]",
+            "name": "slot_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "就诊人标识",
+            "name": "patient_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "当前预约状态",
+            "name": "status",
+            "required": true,
+            "type": "enum"
+          },
+          {
+            "description": "实际到诊时间",
+            "name": "checked_in_at",
+            "required": false,
+            "type": "datetime"
+          }
+        ],
+        "ownership": "预约单管理模块",
+        "retention": "由 [[retention|门诊数据保留策略]] 规定",
+        "stateTransitions": [
+          {
+            "from": "待确认",
+            "to": "已确认",
+            "when": "名额锁定成功"
+          },
+          {
+            "from": "已确认",
+            "to": "已签到",
+            "when": "到诊核验通过"
+          },
+          {
+            "from": "已确认",
+            "to": "已取消",
+            "when": "取消请求符合窗口政策"
+          }
+        ],
+        "states": [
+          {
+            "description": "短暂保留号源",
+            "name": "待确认"
+          },
+          {
+            "name": "已确认"
+          },
+          {
+            "name": "已签到"
+          },
+          {
+            "name": "已取消"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "text": "**已确认**表示号源扣减成功。到诊时由 [[check-in#verify|凭证核验]] 检查。",
+          "title": "状态解释",
+          "type": "text"
+        },
+        {
+          "columns": [
+            "状态",
+            "页面提示"
+          ],
+          "rows": [
+            [
+              "已确认",
+              "按时到诊并出示凭证"
+            ],
+            [
+              "已签到",
+              "等待诊室叫号"
+            ]
+          ],
+          "title": "状态对患者的含义",
+          "type": "table"
+        },
+        {
+          "text": "到诊时间与预约时间分别记录。",
+          "tone": "info",
+          "type": "callout"
+        }
+      ],
+      "sources": [
+        {
+          "kind": "file",
+          "ref": "docs/booking/appointment.md",
+          "symbol": "状态与归属"
+        }
+      ],
+      "implementation": {
+        "evidence": [
+          {
+            "checkedAt": "2026-11-20T09:00:00.000Z",
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/booking/appointment.ts",
+            "symbol": "Appointment"
+          }
+        ],
+        "status": "implemented"
+      }
+    },
+    {
+      "id": "audit",
+      "type": "module",
+      "title": "访问审计",
+      "summary": "记下敏感记录的访问用途与操作者。",
+      "parent": "ops",
+      "group": "管理",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "记录已授权的读取和被拒绝的访问"
+        ]
+      }
+    },
+    {
+      "id": "audit-entry",
+      "type": "entity",
+      "title": "审计事件",
+      "summary": "记录操作者、访问目的和授权结果。",
+      "parent": "audit",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "操作账号",
+            "name": "operator_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "访问用途",
+            "name": "purpose",
+            "required": true,
+            "type": "text"
+          }
+        ]
+      }
+    },
+    {
+      "id": "booking",
+      "type": "module",
+      "title": "预约服务",
+      "summary": "管理医生排班、号源锁定及预约确认。",
+      "parent": "clinic",
+      "group": "门诊业务",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "按医生与时段发布剩余号源",
+          "锁定号源并写入预约单"
+        ]
+      },
+      "implementation": {
+        "evidence": [
+          {
+            "checkedAt": "2026-11-20T09:00:00.000Z",
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/booking/reserve.ts",
+            "symbol": "reserveSlot"
+          }
+        ],
+        "note": "已覆盖创建和确认，候补通知还在设计中。",
+        "status": "partial"
+      }
+    },
+    {
+      "id": "booking-ui",
+      "type": "module",
+      "title": "患者预约",
+      "summary": "选择医生、日期和问诊时段。",
+      "parent": "patient-portal",
+      "group": "患者界面",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "加载当日号源与候选日期",
+          "提交后展示确认状态与预约码"
+        ]
+      }
+    },
+    {
+      "id": "cancelled-reminder",
+      "type": "rule",
+      "title": "取消后不再发送提醒",
+      "summary": "预约取消后，停止发送该预约的待发提醒。",
+      "parent": "remind",
+      "status": "proposed",
+      "origin": "ai",
+      "body": {
+        "constraint": "预约已取消时，跳过提醒并结束该任务。",
+        "when": "预约提醒任务出队时。"
+      }
+    },
+    {
+      "id": "capacity",
+      "type": "rule",
+      "title": "名额扣减约束",
+      "summary": "号源扣减和预约确认必须一致。",
+      "parent": "booking",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "同一时段确认数不得超过容量。",
+        "when": "确认预约时。"
+      }
+    },
+    {
+      "id": "check-in",
+      "type": "flow",
+      "title": "办理到诊签到",
+      "summary": "验明预约和就诊人，再生成候诊号码。",
+      "parent": "checkin",
+      "group": "到诊办理",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "ends": [
+          "enqueue",
+          "desk"
+        ],
+        "start": "scan",
+        "steps": [
+          {
+            "action": "前台核对预约码和就诊人姓名。",
+            "actor": "clerk",
+            "id": "scan",
+            "title": "扫描预约凭证"
+          },
+          {
+            "action": "校验当前日期、预约状态和签到窗口。",
+            "actor": "clerk",
+            "failure": "失败时展示原因与可用处理入口。",
+            "id": "verify",
+            "title": "验证预约状态"
+          },
+          {
+            "action": "保存签到结果，打印候诊号码。",
+            "actor": "clerk",
+            "id": "enqueue",
+            "title": "加入候诊队列"
+          },
+          {
+            "action": "记录无法验证的原因，等待前台复核。",
+            "actor": "clerk",
+            "id": "desk",
+            "title": "转人工登记"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "scan",
+            "to": "verify"
+          },
+          {
+            "from": "verify",
+            "to": "enqueue",
+            "when": "凭证有效"
+          },
+          {
+            "from": "verify",
+            "to": "desk",
+            "when": "无法验证"
+          }
+        ],
+        "trigger": "前台收到预约凭证。"
+      }
+    },
+    {
+      "id": "checkin",
+      "type": "module",
+      "title": "身份核验",
+      "summary": "凭预约码核对当日预约与本人身份。",
+      "parent": "reception",
+      "group": "接诊准备",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "验证预约可签到",
+          "在重复签到时返回原队列号"
+        ]
+      }
+    },
+    {
+      "id": "checkin-api",
+      "type": "interface",
+      "title": "核验到诊凭证",
+      "summary": "检查预约是否能签到并返回队列号。",
+      "parent": "checkin",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "auth": "登录且有相应模块权限",
+        "errors": [
+          {
+            "code": "409 ALREADY_CALLED",
+            "when": "预约已经叫号"
+          }
+        ],
+        "kind": "http",
+        "request": [
+          {
+            "description": "预约凭证",
+            "name": "code",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "response": [
+          {
+            "description": "候诊号",
+            "name": "ticket",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "signature": "POST /check-ins"
+      }
+    },
+    {
+      "id": "checkin-window",
+      "type": "rule",
+      "title": "签到时间窗",
+      "summary": "超出时间窗转人工核验。",
+      "parent": "checkin",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "预约日期及到诊时段须在签到窗口内。",
+        "when": "扫描到诊凭证时。"
+      }
+    },
+    {
+      "id": "clerk",
+      "type": "actor",
+      "title": "前台人员",
+      "summary": "核对预约单并安排候诊。",
+      "parent": "clinic",
+      "group": "参与角色",
+      "order": 6,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "description": "负责核对患者身份和当日预约。"
+      }
+    },
+    {
+      "id": "clinic",
+      "type": "system",
+      "title": "青禾诊所",
+      "summary": "从患者预约到医生接诊，统一管理号源、候诊与病历。",
+      "parent": null,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "assumptions": [
+          "同一患者使用一个诊所账号",
+          "号源时间以诊所所在时区展示"
+        ],
+        "audience": [
+          "首次就诊及复诊患者",
+          "前台、诊室医生与诊所管理员"
+        ],
+        "goals": [
+          "让患者在到诊前确认可用时段",
+          "支持医生在一次问诊内完成记录及复诊安排"
+        ],
+        "scopeIn": [
+          "门诊预约、签到、候诊、问诊和复诊提示"
+        ],
+        "scopeOut": [
+          "支付、医保结算、远程诊疗"
+        ],
+        "success": [
+          "每次提交都能区分预约成功、重复提交与号源冲突",
+          "签到状态与诊室叫号一致"
+        ]
+      }
+    },
+    {
+      "id": "consult",
+      "type": "module",
+      "title": "问诊服务",
+      "summary": "读取候诊信息并保存诊疗记录。",
+      "parent": "clinic",
+      "group": "门诊业务",
+      "order": 3,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "医生确认患者身份，记录问诊并结束接诊"
+        ]
+      }
+    },
+    {
+      "id": "doctor",
+      "type": "actor",
+      "title": "门诊医生",
+      "summary": "叫号、接诊并签署问诊记录。",
+      "parent": "clinic",
+      "group": "参与角色",
+      "order": 7,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "description": "只能打开本人诊室当前队列内的病历。"
+      }
+    },
+    {
+      "id": "duplicate",
+      "type": "acceptance",
+      "title": "重复提交验收",
+      "summary": "同幂等键请求返回同一单号。",
+      "parent": "reserve",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "given": [
+          "第一次提交已成功"
+        ],
+        "then": [
+          "返回原预约单号",
+          "名额不重复扣减"
+        ],
+        "when": "再次提交相同幂等键"
+      },
+      "verification": {
+        "checkedAt": "2026-11-20T13:22:17.605Z",
+        "note": "演示记录。重复提交返回同一个预约单。",
+        "status": "passed"
+      }
+    },
+    {
+      "id": "encounter",
+      "type": "module",
+      "title": "诊室问诊",
+      "summary": "打开当前患者问诊、保存草稿并签署。",
+      "parent": "consult",
+      "group": "诊疗记录",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "签署后将记录标记为只读",
+          "未签名草稿只在诊室内可见"
+        ]
+      }
+    },
+    {
+      "id": "first-visit",
+      "type": "decision",
+      "title": "首次就诊表单字段",
+      "summary": "确定确认预约前需要填写的信息。",
+      "parent": "patient-portal",
+      "status": "proposed",
+      "origin": "ai",
+      "body": {
+        "chosen": null,
+        "options": [
+          {
+            "title": "选填一行说明"
+          },
+          {
+            "title": "到诊后由前台登记"
+          }
+        ],
+        "question": "确认预约前是否收集就医原因？"
+      }
+    },
+    {
+      "id": "followup",
+      "type": "module",
+      "title": "复诊安排",
+      "summary": "登记复诊时间建议与提醒。",
+      "parent": "consult",
+      "group": "后续服务",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "将签署后的复诊计划交给患者端"
+        ]
+      }
+    },
+    {
+      "id": "followup-plan",
+      "type": "entity",
+      "title": "复诊计划",
+      "summary": "记录复诊时间范围与联系意愿。",
+      "parent": "followup",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "建议复诊日期",
+            "name": "due_date",
+            "required": true,
+            "type": "date"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hold",
+      "type": "entity",
+      "title": "号源占位",
+      "summary": "短期保留号源，超时后释放。",
+      "parent": "locking",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "占位截止时间",
+            "name": "expires_at",
+            "required": true,
+            "type": "datetime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "idempotency",
+      "type": "rule",
+      "title": "预约幂等规则",
+      "summary": "重复请求只保留一张成功预约单。",
+      "parent": "reserve",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "同一患者的同一幂等键返回原始确认结果。",
+        "when": "接口收到重复提交时。"
+      }
+    },
+    {
+      "id": "identifier",
+      "type": "decision",
+      "title": "预约码的展示格式",
+      "summary": "患者可口述短码，前台也可扫码核对。",
+      "parent": "receipt",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "chosen": 1,
+        "decidedAt": "2026-11-20T09:15:00.000Z",
+        "decidedBy": "诊所运营",
+        "options": [
+          {
+            "title": "仅展示短码"
+          },
+          {
+            "title": "二维码和短码并列"
+          }
+        ],
+        "question": "页面默认展示什么凭证？",
+        "rationale": "屏幕受损时仍可由患者口述短码。"
+      }
+    },
+    {
+      "id": "last-slot",
+      "type": "acceptance",
+      "title": "末位号源并发验收",
+      "summary": "两人同时抢末位号源时仅一人成功。",
+      "parent": "reserve",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "given": [
+          "医生时段仅剩一个名额",
+          "两名患者的会话独立"
+        ],
+        "then": [
+          "仅产生一条 **已确认** 预约",
+          "另一请求收到 `409 SLOT_UNAVAILABLE`",
+          "可回到 [[make-booking#retry|改选时段]]"
+        ],
+        "when": "两次请求同时到达"
+      },
+      "notes": [
+        {
+          "items": [
+            "比对两次请求的返回码",
+            "核对时段容量与预约单数量"
+          ],
+          "title": "检查记录",
+          "type": "list"
+        }
+      ]
+    },
+    {
+      "id": "late-checkin",
+      "type": "acceptance",
+      "title": "超时签到验收",
+      "summary": "过签到窗口时由前台处理。",
+      "parent": "checkin",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "given": [
+          "当前时间超过签到窗口"
+        ],
+        "then": [
+          "提示凭证无效",
+          "保留人工登记入口"
+        ],
+        "when": "前台扫描原预约码"
+      },
+      "verification": {
+        "checkedAt": "2026-11-20T13:22:17.605Z",
+        "note": "演示记录。超时签到仍显示可提交。",
+        "status": "failed"
+      }
+    },
+    {
+      "id": "late-policy",
+      "type": "decision",
+      "title": "迟到后如何排队",
+      "summary": "前台复核通过后需确定候诊顺位。",
+      "parent": "reception",
+      "status": "proposed",
+      "origin": "ai",
+      "body": {
+        "options": [
+          {
+            "title": "保留原号"
+          },
+          {
+            "title": "按签到后重新取号"
+          }
+        ],
+        "question": "迟到患者回队是否保留原号？"
+      }
+    },
+    {
+      "id": "legacy-reminder",
+      "type": "rule",
+      "title": "旧版短信提醒",
+      "summary": "原单一短信渠道的暂停规则。",
+      "parent": "remind",
+      "status": "retired",
+      "origin": "ai",
+      "body": {
+        "constraint": "现有旧提醒路径停止新增任务。"
+      }
+    },
+    {
+      "id": "locking",
+      "type": "module",
+      "title": "号源并发控制",
+      "summary": "隔离多个患者对同一个名额的竞争。",
+      "parent": "reserve",
+      "group": "写入",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "在单个事务内校验容量并写入",
+          "以预约单决定是否扣减名额"
+        ]
+      }
+    },
+    {
+      "id": "make-booking",
+      "type": "flow",
+      "title": "提交门诊预约",
+      "summary": "校验当前号源，冲突时可返回选时段。",
+      "parent": "reserve",
+      "group": "写入",
+      "order": 3,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "ends": [
+          "confirm",
+          "exit"
+        ],
+        "preconditions": [
+          "患者登录",
+          "时段仍在开放预约范围"
+        ],
+        "start": "pick",
+        "steps": [
+          {
+            "action": "患者在预约页选定医生和可用时段。",
+            "actor": "patient",
+            "id": "pick",
+            "title": "选择就诊时段"
+          },
+          {
+            "action": "提交时用幂等键校验剩余名额。",
+            "actor": "patient",
+            "failure": "锁定失败时保留筛选条件。",
+            "id": "lock",
+            "inputs": [
+              "[[slot]]"
+            ],
+            "outputs": [
+              "临时占位"
+            ],
+            "title": "尝试锁定号源"
+          },
+          {
+            "action": "生成预约单并返回到诊凭证。",
+            "actor": "patient",
+            "id": "confirm",
+            "title": "确认预约成功"
+          },
+          {
+            "action": "保留原日期，提示改选或退出。",
+            "actor": "patient",
+            "failure": "退出时释放本次临时占位。",
+            "id": "retry",
+            "title": "展示时段已满"
+          },
+          {
+            "action": "保留选号页面，不创建预约单。",
+            "actor": "patient",
+            "id": "exit",
+            "title": "结束本次预约"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "pick",
+            "to": "lock"
+          },
+          {
+            "from": "lock",
+            "to": "confirm",
+            "when": "还有名额"
+          },
+          {
+            "from": "lock",
+            "to": "retry",
+            "when": "号源已满"
+          },
+          {
+            "from": "retry",
+            "to": "lock",
+            "when": "改选时段后重试"
+          },
+          {
+            "from": "retry",
+            "to": "exit",
+            "when": "退出预约"
+          }
+        ],
+        "trigger": "患者点击确认预约。"
+      }
+    },
+    {
+      "id": "message-consent",
+      "type": "rule",
+      "title": "提醒渠道授权",
+      "summary": "患者可随时撤销预约提醒授权。",
+      "parent": "remind",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "发送前读取最新授权状态。",
+        "when": "提醒任务出队时。"
+      }
+    },
+    {
+      "id": "note-editor",
+      "type": "screen",
+      "title": "医生病历编辑",
+      "summary": "填写主诉、处理意见和复诊计划。",
+      "parent": "encounter",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "elements": [
+          "状态说明",
+          "主要操作"
+        ],
+        "purpose": "校验并签署本人问诊记录。",
+        "route": "/visits/:id",
+        "states": [
+          "加载中",
+          "成功",
+          "失败"
+        ]
+      }
+    },
+    {
+      "id": "notify-api",
+      "type": "interface",
+      "title": "发送提醒接口",
+      "summary": "调度已授权的预约提醒。",
+      "parent": "remind",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "auth": "登录且有相应模块权限",
+        "kind": "http",
+        "request": [
+          {
+            "description": "待提醒预约",
+            "name": "appointment_id",
+            "required": true,
+            "type": "UUID"
+          }
+        ],
+        "response": [
+          {
+            "description": "提醒任务编号",
+            "name": "job_id",
+            "required": true,
+            "type": "UUID"
+          }
+        ],
+        "signature": "POST /reminders"
+      }
+    },
+    {
+      "id": "ops",
+      "type": "module",
+      "title": "诊所运营",
+      "summary": "校准排班、授权和就诊记录审计。",
+      "parent": "clinic",
+      "group": "运营支持",
+      "order": 4,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "维护开诊时段与补班记录",
+          "按权限核对排班记录"
+        ]
+      }
+    },
+    {
+      "id": "patient",
+      "type": "actor",
+      "title": "患者",
+      "summary": "预约号源并在到诊时出示凭证。",
+      "parent": "clinic",
+      "group": "参与角色",
+      "order": 5,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "description": "首次及复诊患者。",
+        "goals": [
+          "在出发前确认医生与时间"
+        ]
+      }
+    },
+    {
+      "id": "patient-portal",
+      "type": "module",
+      "title": "患者端",
+      "summary": "查询时段、提交预约、查看确认与复诊提示。",
+      "parent": "clinic",
+      "group": "患者入口",
+      "order": 0,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "展示可预约的时段",
+          "保留当前预约凭证和改约入口"
+        ]
+      }
+    },
+    {
+      "id": "queue",
+      "type": "module",
+      "title": "候诊队列",
+      "summary": "按签到顺序分配候诊号并记录叫号。",
+      "parent": "reception",
+      "group": "接诊准备",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "维护诊室与队列的关联",
+          "支持错过叫号后的人工处理"
+        ]
+      }
+    },
+    {
+      "id": "queue-board",
+      "type": "screen",
+      "title": "诊室叫号屏",
+      "summary": "显示当前叫号和等待序号。",
+      "parent": "queue",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "elements": [
+          "状态说明",
+          "主要操作"
+        ],
+        "purpose": "让候诊患者知道何时进入诊室。",
+        "route": "/queue",
+        "states": [
+          "加载中",
+          "成功",
+          "失败"
+        ]
+      }
+    },
+    {
+      "id": "queue-ticket",
+      "type": "entity",
+      "title": "候诊号码",
+      "summary": "按诊室维护已签到患者的候诊顺序。",
+      "parent": "queue",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "当日诊室内序号",
+            "name": "number",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "预约单标识",
+            "name": "appointment_id",
+            "required": true,
+            "type": "UUID"
+          }
+        ],
+        "states": [
+          {
+            "name": "候诊"
+          },
+          {
+            "name": "已叫号"
+          },
+          {
+            "name": "已接诊"
+          }
+        ]
+      }
+    },
+    {
+      "id": "receipt",
+      "type": "module",
+      "title": "预约凭证",
+      "summary": "查看预约状态、签到凭证和门诊地址。",
+      "parent": "patient-portal",
+      "group": "患者界面",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "登录后展示本人的最新预约凭证"
+        ]
+      }
+    },
+    {
+      "id": "receipt-access",
+      "type": "rule",
+      "title": "预约凭证访问约束",
+      "summary": "说明预约凭证的发放规则。",
+      "parent": "reserve",
+      "status": "accepted",
+      "origin": "user",
+      "body": {
+        "constraint": "只向当前患者显示凭证。"
+      }
+    },
+    {
+      "id": "receipt-expiry",
+      "type": "decision",
+      "title": "预约凭证失效时间",
+      "summary": "确定未签到凭证在何时失效。",
+      "parent": "receipt",
+      "status": "proposed",
+      "origin": "ai",
+      "body": {
+        "chosen": 0,
+        "options": [
+          {
+            "title": "签到窗口结束时失效"
+          },
+          {
+            "title": "就诊日结束时失效"
+          }
+        ],
+        "question": "未签到的预约凭证应在何时失效？",
+        "rationale": "凭证与签到窗口同步，迟到患者由前台核实预约后处理。"
+      }
+    },
+    {
+      "id": "receipt-page",
+      "type": "screen",
+      "title": "预约详情页",
+      "summary": "为患者展示签到码和预约状态。",
+      "parent": "receipt",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "elements": [
+          "状态说明",
+          "主要操作"
+        ],
+        "purpose": "核对就诊信息以及是否能取消。",
+        "route": "/appointments/:id",
+        "states": [
+          "加载中",
+          "成功",
+          "失败"
+        ]
+      }
+    },
+    {
+      "id": "reception",
+      "type": "module",
+      "title": "签到与候诊",
+      "summary": "核对预约凭证，安排当天候诊与叫号。",
+      "parent": "clinic",
+      "group": "门诊业务",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "办理本人签到",
+          "更新诊室队列与叫号状态"
+        ]
+      }
+    },
+    {
+      "id": "record-access",
+      "type": "rule",
+      "title": "病历访问约束",
+      "summary": "医生只读取授权诊室的记录。",
+      "parent": "consult",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "须对诊室身份和当前患者关联做双重检查。",
+        "when": "打开病历时。"
+      }
+    },
+    {
+      "id": "remind",
+      "type": "module",
+      "title": "预约提醒",
+      "summary": "在预约确认后排队生成就诊提醒。",
+      "parent": "booking",
+      "group": "消息",
+      "order": 3,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "按同意状态选择提醒渠道",
+          "记录失败与重试次数"
+        ]
+      }
+    },
+    {
+      "id": "reminder-job",
+      "type": "entity",
+      "title": "提醒任务",
+      "summary": "跟踪发送渠道、时间和回执。",
+      "parent": "remind",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "计划发送时间",
+            "name": "send_at",
+            "required": true,
+            "type": "datetime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reschedule",
+      "type": "module",
+      "title": "改约与退号",
+      "summary": "在政策允许时释放旧时段并确认新时段。",
+      "parent": "reserve",
+      "group": "变更",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "按预约单状态决定可执行操作"
+        ]
+      }
+    },
+    {
+      "id": "reserve",
+      "type": "module",
+      "title": "预约单管理",
+      "summary": "处理提交、确认与超时释放。",
+      "parent": "booking",
+      "group": "预约核心",
+      "order": 2,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "boundaries": [
+          "退号政策由运营维护"
+        ],
+        "inputs": [
+          "[[slot|医生号源]]"
+        ],
+        "outputs": [
+          "[[appointment|预约单]]"
+        ],
+        "responsibilities": [
+          "保证同一时段不会超卖",
+          "按幂等键返回相同预约结果"
+        ]
+      },
+      "implementation": {
+        "evidence": [
+          {
+            "checkedAt": "2026-11-20T09:00:00.000Z",
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/booking/reserve.ts",
+            "symbol": "reserveSlot"
+          }
+        ],
+        "status": "implemented"
+      }
+    },
+    {
+      "id": "reserve-api",
+      "type": "interface",
+      "title": "创建预约接口",
+      "summary": "接受时段和幂等键，返回预约确认。",
+      "parent": "reserve",
+      "group": "业务数据",
+      "order": 5,
+      "status": "accepted",
+      "origin": "code",
+      "body": {
+        "auth": "登录且有相应模块权限",
+        "errors": [
+          {
+            "code": "409 SLOT_UNAVAILABLE",
+            "when": "时段已满或关闭"
+          },
+          {
+            "code": "422 OUTSIDE_WINDOW",
+            "when": "超出可预约日期"
+          }
+        ],
+        "kind": "http",
+        "request": [
+          {
+            "description": "希望预约的号源",
+            "name": "slot_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "本次提交的幂等键",
+            "name": "request_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "response": [
+          {
+            "description": "新建或早先确认的预约单",
+            "name": "appointment_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "到诊预约码",
+            "name": "code",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "signature": "POST /appointments"
+      },
+      "notes": [
+        {
+          "lang": "json",
+          "text": "{\n  \"slot_id\": \"slot-20261120-am\",\n  \"request_id\": \"req-0142\"\n}",
+          "title": "最小请求",
+          "type": "code"
+        },
+        {
+          "text": "重试应沿用同一个 `request_id`，详见 [[idempotency|预约幂等规则]]。",
+          "tone": "warn",
+          "type": "callout"
+        }
+      ],
+      "sources": [
+        {
+          "kind": "file",
+          "ref": "docs/api/booking.md"
+        }
+      ],
+      "implementation": {
+        "evidence": [
+          {
+            "checkedAt": "2026-11-20T09:00:00.000Z",
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/http/booking.ts",
+            "symbol": "createAppointment"
+          },
+          {
+            "checkedAt": "2026-11-20T09:00:00.000Z",
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/booking/waitlist.ts",
+            "symbol": "appendWaitlist"
+          }
+        ],
+        "note": "创建已对接，候补状态仍待接入。",
+        "status": "partial"
+      }
+    },
+    {
+      "id": "retention",
+      "type": "rule",
+      "title": "门诊数据保留策略",
+      "summary": "病历和审计记录按运营制度存档。",
+      "parent": "audit",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "constraint": "进入保留期末尾前由运营核准到期处置。",
+        "when": "发出存档清理请求时。"
+      }
+    },
+    {
+      "id": "roster",
+      "type": "module",
+      "title": "医生排班",
+      "summary": "维护轮班、临时停诊及替班。",
+      "parent": "ops",
+      "group": "管理",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "保留原排班和操作者，便于追溯"
+        ]
+      }
+    },
+    {
+      "id": "roster-admin",
+      "type": "screen",
+      "title": "后台排班页",
+      "summary": "登记停诊日期和替班医生。",
+      "parent": "roster",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "elements": [
+          "状态说明",
+          "主要操作"
+        ],
+        "purpose": "发布门诊排班变更。",
+        "route": "/admin/rosters",
+        "states": [
+          "加载中",
+          "成功",
+          "失败"
+        ]
+      }
+    },
+    {
+      "id": "schedule",
+      "type": "module",
+      "title": "排班与号源",
+      "summary": "按医生、日期发布时段和剩余名额。",
+      "parent": "booking",
+      "group": "预约核心",
+      "order": 1,
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "responsibilities": [
+          "维护时段容量与停诊记录"
+        ]
+      },
+      "implementation": {
+        "status": "planned"
+      }
+    },
+    {
+      "id": "sign-visit",
+      "type": "flow",
+      "title": "签署问诊记录",
+      "summary": "经过确认后冻结本次问诊记录。",
+      "parent": "encounter",
+      "group": "诊间操作",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "ends": [
+          "sign"
+        ],
+        "start": "draft",
+        "steps": [
+          {
+            "action": "医生记录主诉、诊断与处理方案。",
+            "actor": "doctor",
+            "id": "draft",
+            "title": "填写问诊草稿"
+          },
+          {
+            "action": "校验必填项并写入签署人和时间。",
+            "actor": "doctor",
+            "failure": "若校验失败则保留草稿和错误提示。",
+            "id": "sign",
+            "title": "签署病历"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "draft",
+            "to": "sign"
+          }
+        ],
+        "trigger": "用户发起操作"
+      }
+    },
+    {
+      "id": "signed-readonly",
+      "type": "acceptance",
+      "title": "病历冻结验收",
+      "summary": "已签署的问诊记录禁止覆盖。",
+      "parent": "encounter",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "given": [
+          "问诊已签署"
+        ],
+        "then": [
+          "返回状态冲突"
+        ],
+        "when": "再次提交草稿保存"
+      }
+    },
+    {
+      "id": "slot",
+      "type": "entity",
+      "title": "医生号源",
+      "summary": "记录可预约医生、时段及剩余名额。",
+      "parent": "schedule",
+      "group": "排班发布",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "排班医生",
+            "name": "doctor_id",
+            "required": true,
+            "type": "UUID"
+          },
+          {
+            "description": "时段起点",
+            "name": "starts_at",
+            "required": true,
+            "type": "datetime"
+          },
+          {
+            "description": "可预约名额",
+            "name": "capacity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "ownership": "排班与号源模块"
+      }
+    },
+    {
+      "id": "slot-api",
+      "type": "interface",
+      "title": "查询可约时段",
+      "summary": "按医生和日期返回可预约时段。",
+      "parent": "schedule",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "auth": "登录且有相应模块权限",
+        "kind": "http",
+        "request": [
+          {
+            "description": "诊所本地日期",
+            "name": "date",
+            "required": true,
+            "type": "date"
+          }
+        ],
+        "response": [
+          {
+            "description": "符合条件的开放号源",
+            "name": "slots",
+            "required": true,
+            "type": "array"
+          }
+        ],
+        "signature": "GET /slots"
+      }
+    },
+    {
+      "id": "slot-picker",
+      "type": "screen",
+      "title": "选择就诊时段",
+      "summary": "按日期筛选并确认医生时段。",
+      "parent": "booking-ui",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "elements": [
+          "日期筛选",
+          "可约时段",
+          "确认预约"
+        ],
+        "media": [
+          {
+            "caption": "选号界面原型",
+            "path": "slot-picker.svg"
+          }
+        ],
+        "purpose": "在提交前对照医生、日期和时段。",
+        "route": "/appointments/new",
+        "states": [
+          "加载中",
+          "成功",
+          "失败"
+        ]
+      },
+      "notes": [
+        {
+          "caption": "窄屏选号原型",
+          "path": "slot-picker.svg",
+          "type": "image"
+        },
+        {
+          "items": [
+            "选择日期",
+            "选择一条时段",
+            "确认并等待预约凭证"
+          ],
+          "ordered": true,
+          "title": "提交次序",
+          "type": "list"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "type": "actor",
+      "title": "诊所管理员",
+      "summary": "调整排班并核对授权日志。",
+      "parent": "ops",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "description": "值班期间处理临时停诊。"
+      }
+    },
+    {
+      "id": "visibility",
+      "type": "acceptance",
+      "title": "病历越权验收",
+      "summary": "其他科室医生无法读取问诊记录。",
+      "parent": "consult",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "given": [
+          "医生不属于当前诊室"
+        ],
+        "then": [
+          "访问被拒绝",
+          "写审计事件"
+        ],
+        "when": "访问患者问诊记录"
+      }
+    },
+    {
+      "id": "visit-api",
+      "type": "interface",
+      "title": "签署问诊接口",
+      "summary": "将医生已填写的草稿写为正式病历。",
+      "parent": "encounter",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "auth": "登录且有相应模块权限",
+        "kind": "http",
+        "request": [
+          {
+            "description": "问诊草稿",
+            "name": "visit_id",
+            "required": true,
+            "type": "UUID"
+          }
+        ],
+        "response": [
+          {
+            "description": "签署时间",
+            "name": "signed_at",
+            "required": true,
+            "type": "datetime"
+          }
+        ],
+        "signature": "POST /visits/sign"
+      }
+    },
+    {
+      "id": "visit-record",
+      "type": "entity",
+      "title": "问诊记录",
+      "summary": "保存诊间草稿、签名与复诊建议。",
+      "parent": "encounter",
+      "status": "accepted",
+      "origin": "ai",
+      "body": {
+        "fields": [
+          {
+            "description": "主诉",
+            "name": "chief_complaint",
+            "required": true,
+            "type": "text"
+          },
+          {
+            "description": "签署时间",
+            "name": "signed_at",
+            "required": false,
+            "type": "datetime"
+          }
+        ],
+        "stateTransitions": [
+          {
+            "from": "草稿",
+            "to": "已签署",
+            "when": "签名成功"
+          }
+        ],
+        "states": [
+          {
+            "name": "草稿"
+          },
+          {
+            "name": "已签署"
+          }
+        ]
+      }
+    },
+    {
+      "id": "waitlist",
+      "type": "decision",
+      "title": "候补通知何时发出",
+      "summary": "确认释放时段后，是否立即通知首位候补患者。",
+      "parent": "booking",
+      "status": "proposed",
+      "origin": "ai",
+      "body": {
+        "chosen": null,
+        "options": [
+          {
+            "detail": "患者获得 10 分钟确认时间，超时交给下一位。",
+            "title": "立即通知首位候补"
+          },
+          {
+            "detail": "前台先确认医生仍可接诊，再触发提醒。",
+            "title": "前台确认后通知"
+          }
+        ],
+        "question": "时段释放后，候补患者应在什么时点收到通知？"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "appointment",
+      "to": "receipt-access",
+      "type": "governed_by"
+    },
+    {
+      "from": "appointment",
+      "to": "retention",
+      "type": "governed_by"
+    },
+    {
+      "from": "booking",
+      "to": "reception",
+      "type": "relates",
+      "label": "预约凭证"
+    },
+    {
+      "from": "booking-ui",
+      "to": "reserve-api",
+      "type": "calls"
+    },
+    {
+      "from": "booking-ui",
+      "to": "slot-api",
+      "type": "calls"
+    },
+    {
+      "from": "check-in#enqueue",
+      "to": "queue-ticket",
+      "type": "writes"
+    },
+    {
+      "from": "check-in#verify",
+      "to": "checkin-window",
+      "type": "governed_by"
+    },
+    {
+      "from": "check-in#verify",
+      "to": "appointment",
+      "type": "reads"
+    },
+    {
+      "from": "clerk",
+      "to": "checkin",
+      "type": "uses"
+    },
+    {
+      "from": "clerk",
+      "to": "reception",
+      "type": "uses"
+    },
+    {
+      "from": "doctor",
+      "to": "consult",
+      "type": "uses"
+    },
+    {
+      "from": "duplicate",
+      "to": "reserve-api",
+      "type": "verifies"
+    },
+    {
+      "from": "first-visit",
+      "to": "booking-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "followup",
+      "to": "visit-record",
+      "type": "reads"
+    },
+    {
+      "from": "hold",
+      "to": "slot",
+      "type": "relates",
+      "label": "短期保留"
+    },
+    {
+      "from": "last-slot",
+      "to": "make-booking#lock",
+      "type": "verifies"
+    },
+    {
+      "from": "late-checkin",
+      "to": "check-in#verify",
+      "type": "verifies"
+    },
+    {
+      "from": "late-policy",
+      "to": "queue",
+      "type": "blocks"
+    },
+    {
+      "from": "make-booking#confirm",
+      "to": "appointment",
+      "type": "writes"
+    },
+    {
+      "from": "make-booking#lock",
+      "to": "capacity",
+      "type": "governed_by"
+    },
+    {
+      "from": "make-booking#lock",
+      "to": "idempotency",
+      "type": "governed_by"
+    },
+    {
+      "from": "make-booking#lock",
+      "to": "slot",
+      "type": "reads"
+    },
+    {
+      "from": "note-editor",
+      "to": "record-access",
+      "type": "governed_by"
+    },
+    {
+      "from": "notify-api",
+      "to": "message-consent",
+      "type": "governed_by"
+    },
+    {
+      "from": "ops",
+      "to": "booking",
+      "type": "relates",
+      "label": "发布排班"
+    },
+    {
+      "from": "patient",
+      "to": "patient-portal",
+      "type": "uses"
+    },
+    {
+      "from": "patient-portal",
+      "to": "booking",
+      "type": "calls",
+      "label": "提交预约"
+    },
+    {
+      "from": "queue-board",
+      "to": "queue-ticket",
+      "type": "reads"
+    },
+    {
+      "from": "receipt-page",
+      "to": "appointment",
+      "type": "reads"
+    },
+    {
+      "from": "reception",
+      "to": "consult",
+      "type": "relates",
+      "label": "候诊队列"
+    },
+    {
+      "from": "remind",
+      "to": "reserve",
+      "type": "depends_on",
+      "label": "凭证确认后发送"
+    },
+    {
+      "from": "reserve",
+      "to": "schedule",
+      "type": "depends_on"
+    },
+    {
+      "from": "reserve-api",
+      "to": "idempotency",
+      "type": "governed_by"
+    },
+    {
+      "from": "reserve-api",
+      "to": "appointment",
+      "type": "writes"
+    },
+    {
+      "from": "schedule",
+      "to": "reserve",
+      "type": "relates",
+      "label": "发布号源"
+    },
+    {
+      "from": "sign-visit#draft",
+      "to": "queue-ticket",
+      "type": "reads"
+    },
+    {
+      "from": "sign-visit#sign",
+      "to": "visit-record",
+      "type": "writes"
+    },
+    {
+      "from": "signed-readonly",
+      "to": "sign-visit#sign",
+      "type": "verifies"
+    },
+    {
+      "from": "slot-api",
+      "to": "slot",
+      "type": "reads"
+    },
+    {
+      "from": "slot-picker",
+      "to": "slot-api",
+      "type": "calls"
+    },
+    {
+      "from": "support",
+      "to": "roster-admin",
+      "type": "uses"
+    },
+    {
+      "from": "visibility",
+      "to": "record-access",
+      "type": "verifies"
+    },
+    {
+      "from": "visit-api",
+      "to": "visit-record",
+      "type": "writes"
+    },
+    {
+      "from": "waitlist",
+      "to": "remind",
+      "type": "blocks"
+    }
+  ]
+}

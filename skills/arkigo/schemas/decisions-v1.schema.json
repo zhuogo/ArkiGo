@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "decisions-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "arkigo-decisions/1"
+    },
+    "base": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{12}$"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op","id"],
+        "properties": {
+          "op": {"enum":["accept","retire","decide","comment"]},
+          "id": {"type":"string","pattern":"^[a-z0-9][a-z0-9._-]{0,63}$"},
+          "rationale": {"type":"string"},
+          "by": {"type":"string"},
+          "chosen": {"type":"integer","minimum":0}
+        },
+        "if": {"properties":{"op":{"const":"decide"}}},
+        "then": {"required":["chosen"]}
+      }
+    }
+  },
+  "required": [
+    "format",
+    "base",
+    "items"
+  ]
+}

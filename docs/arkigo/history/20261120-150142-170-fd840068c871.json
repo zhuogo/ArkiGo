@@ -1,0 +1,384 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-20T15:01:42.170Z",
+  "by": "ai",
+  "reason": "说明建档、版本冲突、持久化和决定导入，记录保留给用户的写入策略选择",
+  "base": "0248c01aaaf9",
+  "result": "fd840068c871",
+  "changes": [
+    {
+      "op": "add",
+      "id": "workspace.apply"
+    },
+    {
+      "op": "add",
+      "id": "workspace.atomic"
+    },
+    {
+      "op": "add",
+      "id": "workspace.change"
+    },
+    {
+      "op": "add",
+      "id": "workspace.change-tests"
+    },
+    {
+      "op": "add",
+      "id": "workspace.clear-test"
+    },
+    {
+      "op": "add",
+      "id": "workspace.decisions-data"
+    },
+    {
+      "op": "add",
+      "id": "workspace.files"
+    },
+    {
+      "op": "add",
+      "id": "workspace.history-data"
+    },
+    {
+      "op": "add",
+      "id": "workspace.import"
+    },
+    {
+      "op": "add",
+      "id": "workspace.init"
+    },
+    {
+      "op": "add",
+      "id": "workspace.keep-denial"
+    },
+    {
+      "op": "add",
+      "id": "workspace.layout"
+    },
+    {
+      "op": "add",
+      "id": "workspace.layout-data"
+    },
+    {
+      "op": "add",
+      "id": "workspace.paths"
+    },
+    {
+      "op": "add",
+      "id": "workspace.planned-evidence"
+    },
+    {
+      "op": "add",
+      "id": "workspace.refresh"
+    },
+    {
+      "op": "add",
+      "id": "workspace.render"
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.change",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.init",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.layout",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.render",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "model",
+        "type": "depends_on",
+        "label": "使用设计协议"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "model.validation",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.atomic",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.paths",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.refresh",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "model.design",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.files",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.history-data",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace",
+        "to": "workspace.layout-data",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply",
+        "to": "model.validation",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply",
+        "to": "workspace.atomic",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply",
+        "to": "workspace.refresh",
+        "type": "governed_by"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply",
+        "to": "model.design",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.apply",
+        "to": "workspace.history-data",
+        "type": "writes"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.apply",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.atomic",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.change",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.decisions-data",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.files",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.history-data",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.import",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.init",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.layout",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.layout-data",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.paths",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.refresh",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.change-tests",
+        "to": "workspace.render",
+        "type": "verifies"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.clear-test",
+        "to": "model.records",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.import",
+        "to": "workspace.change",
+        "type": "calls"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.import",
+        "to": "workspace.decisions-data",
+        "type": "reads"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.keep-denial",
+        "to": "workspace.import",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.planned-evidence",
+        "to": "workspace.change",
+        "type": "blocks"
+      }
+    },
+    {
+      "op": "link",
+      "relation": {
+        "from": "workspace.render",
+        "to": "viewer",
+        "type": "calls",
+        "label": "生成页面"
+      }
+    }
+  ]
+}

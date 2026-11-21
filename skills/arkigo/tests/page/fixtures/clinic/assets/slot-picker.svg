@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" role="img" aria-labelledby="title">
+  <title id="title">青禾诊所 · 选择就诊时段</title>
+  <rect width="640" height="380" fill="#eef3f0"/>
+  <rect x="36" y="28" width="568" height="324" rx="12" fill="#fff" stroke="#cbd8d0"/>
+  <g font-family="'Noto Sans CJK SC', sans-serif" fill="#183229">
+    <text x="64" y="73" font-size="24" font-weight="bold">选择就诊时段</text>
+    <text x="64" y="105" font-size="16" fill="#486059">全科门诊 · 陈医生</text>
+    <path d="M64 151h512" stroke="#d6e0da"/>
+    <text x="66" y="143" font-size="17" fill="#176748">11月23日 周一</text>
+    <text x="236" y="143" font-size="17">11月24日 周二</text>
+    <text x="405" y="143" font-size="17">11月25日 周三</text>
+    <path d="M64 151h132" stroke="#227653" stroke-width="3"/>
+    <rect x="64" y="177" width="512" height="46" rx="6" fill="#e9f5ee" stroke="#227653"/>
+    <rect x="64" y="233" width="512" height="46" rx="6" fill="#fff" stroke="#cbd8d0"/>
+    <text x="82" y="206" font-size="18">09:00–09:30</text>
+    <text x="502" y="206" font-size="15" fill="#176748">剩 2 位</text>
+    <text x="82" y="262" font-size="18">09:30–10:00</text>
+    <text x="502" y="262" font-size="15" fill="#486059">剩 1 位</text>
+    <rect x="420" y="293" width="156" height="39" rx="6" fill="#227653"/>
+    <text x="498" y="319" font-size="17" fill="#fff" text-anchor="middle">确认时段</text>
+  </g>
+</svg>

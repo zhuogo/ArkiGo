@@ -1,0 +1,45 @@
+{
+  "appointment": [
+    {
+      "of": "implementation",
+      "path": "src/booking/appointment.ts",
+      "state": "ok"
+    },
+    {
+      "of": "source",
+      "path": "docs/booking/appointment.md",
+      "state": "ok"
+    }
+  ],
+  "reserve": [
+    {
+      "of": "implementation",
+      "path": "src/booking/reserve.ts",
+      "state": "ok"
+    }
+  ],
+  "booking": [
+    {
+      "of": "implementation",
+      "path": "src/booking/reserve.ts",
+      "state": "ok"
+    }
+  ],
+  "reserve-api": [
+    {
+      "of": "implementation",
+      "path": "src/http/booking.ts",
+      "state": "changed"
+    },
+    {
+      "of": "implementation",
+      "path": "src/booking/waitlist.ts",
+      "state": "missing"
+    },
+    {
+      "of": "source",
+      "path": "docs/api/booking.md",
+      "state": "unrecorded"
+    }
+  ]
+}
