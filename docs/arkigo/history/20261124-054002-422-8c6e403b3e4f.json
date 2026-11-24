@@ -1,0 +1,72 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-24T05:40:02.422Z",
+  "by": "codex",
+  "reason": "记录 2.1.1 独立安装与版本一致性验收",
+  "base": "0e5d877fceef",
+  "result": "8c6e403b3e4f",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.install-test",
+      "fields": [
+        "verification.checkedAt",
+        "verification.note"
+      ],
+      "before": {
+        "id": "practice.install-test",
+        "type": "acceptance",
+        "title": "独立安装与发布许可回归",
+        "summary": "两份许可证相同，安装副本携带许可证，版本与发布清单一致。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "given": [
+            "系统临时目录内的新技能和新项目"
+          ],
+          "then": [
+            "两份许可证相同，安装副本携带许可证，version 的输出与发布清单一致。",
+            "独立运行可建档、改设计、生成 HTML。"
+          ],
+          "when": "运行 core 安装用例，实际 install、npm ci、version、init、change 和 render"
+        },
+        "sources": [
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/tests/core/workflow.test.mjs",
+            "symbol": "12 arity, duplicate flags, all exit codes and installer behavior"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/install.mjs",
+            "symbol": "install"
+          }
+        ],
+        "verification": {
+          "checkedAt": "2026-11-21T10:21:32.014Z",
+          "evidence": [
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/tests/core/workflow.test.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/scripts/commands/install.mjs"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/package.json"
+            },
+            {
+              "kind": "file",
+              "ref": "skills/arkigo/package-lock.json"
+            }
+          ],
+          "note": "npm test 中的 core 安装用例通过。临时目录内独立执行 install、npm ci、version、init、change、render、check 成功。CLI 和包清单均为 2.1.0，许可证逐字节相同。",
+          "status": "passed"
+        }
+      }
+    }
+  ]
+}

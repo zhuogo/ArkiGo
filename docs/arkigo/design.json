@@ -1527,7 +1527,7 @@
         }
       ],
       "verification": {
-        "checkedAt": "2026-11-21T10:21:32.014Z",
+        "checkedAt": "2026-11-24T05:40:02.422Z",
         "evidence": [
           {
             "kind": "file",
@@ -1546,7 +1546,7 @@
             "ref": "skills/arkigo/package-lock.json"
           }
         ],
-        "note": "npm test 中的 core 安装用例通过。临时目录内独立执行 install、npm ci、version、init、change、render、check 成功。CLI 和包清单均为 2.1.0，许可证逐字节相同。",
+        "note": "临时目录内独立执行 install、npm ci、version、init、change、render 和 check 成功。CLI、包清单和锁文件均为 2.1.1。安装副本携带许可证，与仓库根的许可证逐字节一致。",
         "status": "passed"
       }
     },
@@ -1820,14 +1820,14 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T10:21:32.014Z",
+            "checkedAt": "2026-11-24T05:40:34.910Z",
             "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
             "path": "skills/arkigo/scripts/commands/version.mjs",
             "symbol": "version"
           },
           {
-            "checkedAt": "2026-11-21T10:21:32.014Z",
-            "hash": "7f03e3e994cfea1e990937fa2b973bc5344c51bbf85ad3844238e4ed4d0c5ebf",
+            "checkedAt": "2026-11-24T05:40:34.910Z",
+            "hash": "1b78035745e5e815fdfe27e2610cf5567c2235a3432c3e5b42091ddd91d1f4aa",
             "path": "skills/arkigo/package.json",
             "symbol": "version、engines、dependencies"
           }
@@ -2850,20 +2850,20 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "03e9616fd419981004f027119b72b42bf6bd2a2636a2949b49787ef0e4e72eb7",
             "path": "skills/arkigo/scripts/page.mjs",
             "symbol": "buildPage, inertJson"
           },
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
-            "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f0278231cdfd1ed0ed975778cc97d7862229b14188b27fbf0315bf2892c8050e",
             "path": "skills/arkigo/assets/app.js",
             "symbol": "drawNavigation, navigate, select"
           },
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
-            "hash": "fd68025c0ee9a23458b9f25641a20841fb45b07d0a0e0b1058b0debdeefc0c6a",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "6778c5fa73455cf3c01ce18cc5b4caa869b5109d74daca97d9cea1be5e6c4469",
             "path": "skills/arkigo/assets/readings/map.js",
             "symbol": "地图读法的 render"
           }
@@ -2992,26 +2992,26 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "71ba7b8c390a3d252a3fdd84becae6bc2fda076280142ddc108487e1c43d8228",
             "path": "skills/arkigo/assets/details.js",
             "symbol": "renderDetails、appendModuleContent、evidenceRows"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f0278231cdfd1ed0ed975778cc97d7862229b14188b27fbf0315bf2892c8050e",
             "path": "skills/arkigo/assets/app.js",
             "symbol": "paintDetail、enter"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e3ea293e58d2e8badca5042356b8dbf8dc0a04f17129cc010401fcd234009357",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "0d3827bb1a73112ef3c0e31f622642373520bca9342aae08a6fd9c81accb26b3",
             "path": "skills/arkigo/assets/page.css",
             "symbol": "模块标题、文件列表和详情面板"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e63e4854cf29d538f569e9f5822e7a4eaccc1d50bec6a0564e4dae76bf4586fd",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "b346df01abd277b235fc31f75212dfdbe6bc67063f27452a1d9eb41f54821759",
             "path": "skills/arkigo/assets/camera.js",
             "symbol": "focusWithoutMoving"
           }
@@ -3033,7 +3033,8 @@
           "从地图上的流程卡片或详情里的「查看流程」进入，自动分层排列，起终点和角色用标记表达；地址不指向流程时列出可选流程。",
           "分支线显示条件；步骤的失败处理、规则与验收数量可从步骤打开。",
           "连线与箭头用可区分的颜色，关系和条件标签使用对应线色的半透明底。",
-          "连线离开和接入卡片时优先留出一段直线再转弯，空间紧时可提前转弯。"
+          "连线离开和接入卡片时优先留出一段直线再转弯，空间紧时可提前转弯。",
+          "步骤图在各窗口宽度下保持相同的横向排版，可平移画布查看屏幕外的步骤。"
         ],
         "purpose": "读一件事从触发到结果怎样走。",
         "route": "#/flow/<流程ID>",
@@ -3061,48 +3062,58 @@
           "kind": "file",
           "ref": "skills/arkigo/assets/graph.js",
           "symbol": "graphCard、renderGraph"
+        },
+        {
+          "kind": "conversation",
+          "ref": "2026-11-24 用户要求窄屏保留原布局，通过滑动预览。"
         }
       ],
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "c97640013b7de3ad9bed742181ee60f574fefd714ec792826f48123d4c8b436d",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f7a4b7878d9313aa73e9331fb5e602026bcd2b36830c4faea7577cfbdeb49ba8",
             "path": "skills/arkigo/assets/readings/flow.js",
             "symbol": "registerRead 的 render"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "ac7fa3c9eec1bc7d3cab72de3165fa9af608b72ded388bdf2ba8057bb4606515",
             "path": "skills/arkigo/assets/layout.mjs",
             "symbol": "layoutFlow"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "0e6a8c335b6fe54ce1e877f1517893387da983fe352d308da8aa8258a66834f0",
             "path": "skills/arkigo/assets/graph.js",
             "symbol": "graphCard、renderGraph"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "71ba7b8c390a3d252a3fdd84becae6bc2fda076280142ddc108487e1c43d8228",
             "path": "skills/arkigo/assets/details.js",
             "symbol": "renderDetails"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e3ea293e58d2e8badca5042356b8dbf8dc0a04f17129cc010401fcd234009357",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "0d3827bb1a73112ef3c0e31f622642373520bca9342aae08a6fd9c81accb26b3",
             "path": "skills/arkigo/assets/page.css",
             "symbol": "连线和条件标签"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "8631081f2e02a7a0cd71cd6ed88fa1702e8af155d9e55a4dd7d856cc98b137d0",
             "path": "skills/arkigo/assets/routing.mjs",
             "symbol": "routeConnection、roundedPath"
+          },
+          {
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "b346df01abd277b235fc31f75212dfdbe6bc67063f27452a1d9eb41f54821759",
+            "path": "skills/arkigo/assets/camera.js",
+            "symbol": "createCamera、resize"
           }
         ],
-        "note": "步骤图复用共享走线渲染。条件标签使用对应线色的半透明底。 首尾转弯优先与卡片保持距离。",
+        "note": "步骤图复用共享走线渲染。条件标签使用对应线色的半透明底。 首尾转弯优先与卡片保持距离。 步骤图在各窗口宽度下共用横向排版，可平移画布浏览。",
         "status": "implemented"
       }
     },
@@ -3117,7 +3128,8 @@
       "body": {
         "elements": [
           "按设计状态与所属模块筛选，选中一行打开对应详情。",
-          "从查找面板的「按类型列出全部」打开，可由顶栏路径回到地图。"
+          "从查找面板的「按类型列出全部」打开，可由顶栏路径回到地图。",
+          "窄屏保持表头和列布局，通过横向滚动浏览完整表格。"
         ],
         "purpose": "按结构化类别和状态查找设计。",
         "route": "#/inventory/<对象ID>",
@@ -3149,23 +3161,34 @@
           "kind": "file",
           "ref": "skills/arkigo/assets/directory.js",
           "symbol": "createDirectory"
+        },
+        {
+          "kind": "conversation",
+          "ref": "2026-11-24 用户要求窄屏保留原布局，通过滑动预览。"
         }
       ],
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
-            "hash": "757db2e2eeebe75bdebd9b638003becc8b7040f6eff53f75303294fbf7064d16",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "7453e0d7a7025d2094f9a2ab0b208abdf30406ca7b26f95471a5183f0dfcbbd0",
             "path": "skills/arkigo/assets/readings/inventory.js",
             "symbol": "inventoryTable"
           },
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "b6c0e6697ea0a4f62b6e852a4d7a8e9573210492bee905d766647257ea90084e",
             "path": "skills/arkigo/assets/directory.js",
             "symbol": "createDirectory"
+          },
+          {
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "0aadee68a0a2f758dee8f44ed327f69e50b937a22a30b88a0b7d44b86f2319d8",
+            "path": "skills/arkigo/assets/readings.css",
+            "symbol": ".inventory-results、.inventory-table"
           }
         ],
+        "note": "清单保留表头与表格列。窄屏可横向滚动清单结果，键盘可聚焦结果区后使用方向键。",
         "status": "implemented"
       }
     },
@@ -3182,7 +3205,7 @@
           "系统和模块只显示直接下级。模块、流程、数据、接口、界面成卡；角色可以从查找或详情打开，本层没有别的卡片时才成卡。规则、验收和决策可通过顶栏查找打开，也可从其他对象详情的下级或关系打开。",
           "主界面采用顶栏、画布和底栏。画布内禁止原生文本选取和拖拽，卡片拖动和画布平移由应用管理。",
           "有实现依据且生成时全部核对一致的卡片显示带勾圆圈，其余显示虚线圆圈。",
-          "按分组或类型分区；宽屏分区并排，放不下换行。自动排版按主要关系分层，同一输入位置稳定，手动位置保存在浏览器并可导出。",
+          "按分组或类型分区，按固定的画布宽度安排分区并排和换行。自动排版按主要关系分层，同一输入在不同窗口宽度下位置稳定，手动位置保存在浏览器并可导出。",
           "关系合并到当前层可见卡片，标签可以打开原关系。连线采用圆滑转角，在卡片间选择较短的通路，可跨分区和不同归属分支。分区边框只作视觉分组，连线和标签可以跨过边框。线多于卡片时默认只画主要关系，选中后突出有关连线，同时保留其他主线和标签的可读性。 连线与箭头用可区分的颜色，关系和条件标签使用对应线色的半透明底。 连线离开和接入卡片时优先留出一段直线再转弯，空间紧时可提前转弯。",
           "在宽屏和窄屏单击卡片均打开详情。模块详情的标题旁提供进入箭头，流程详情提供查看流程。双击和画布缩放导航也可进入，顶栏路径和缩小可返回。底栏提供缩放、适应、布局重置及导出。"
         ],
@@ -3263,60 +3286,70 @@
         {
           "kind": "conversation",
           "ref": "2026-11-21 用户建议延长卡片附近的连线转弯距离或增加分区内边距，并委托选择。"
+        },
+        {
+          "kind": "conversation",
+          "ref": "2026-11-24 用户要求窄屏保留原布局，通过滑动预览。"
         }
       ],
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "0e6a8c335b6fe54ce1e877f1517893387da983fe352d308da8aa8258a66834f0",
             "path": "skills/arkigo/assets/graph.js",
             "symbol": "graphCard、renderGraph"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e63e4854cf29d538f569e9f5822e7a4eaccc1d50bec6a0564e4dae76bf4586fd",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "b346df01abd277b235fc31f75212dfdbe6bc67063f27452a1d9eb41f54821759",
             "path": "skills/arkigo/assets/camera.js",
-            "symbol": "createCamera"
+            "symbol": "createCamera、resize"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "fd68025c0ee9a23458b9f25641a20841fb45b07d0a0e0b1058b0debdeefc0c6a",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "6778c5fa73455cf3c01ce18cc5b4caa869b5109d74daca97d9cea1be5e6c4469",
             "path": "skills/arkigo/assets/readings/map.js",
             "symbol": "地图读法的 render"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f0278231cdfd1ed0ed975778cc97d7862229b14188b27fbf0315bf2892c8050e",
             "path": "skills/arkigo/assets/app.js",
             "symbol": "drawNavigation、navigate、select"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e3310f6b69ffd759502803a43e0ab902b8506546f56adcff1e69a30db0420109",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "41fc638adf6858ad783c4da8ad30def9737ac389f27438eacc2d78df68444c79",
             "path": "skills/arkigo/assets/dom.js",
             "symbol": "codeCheckMark"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e3ea293e58d2e8badca5042356b8dbf8dc0a04f17129cc010401fcd234009357",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "0d3827bb1a73112ef3c0e31f622642373520bca9342aae08a6fd9c81accb26b3",
             "path": "skills/arkigo/assets/page.css",
             "symbol": "画布、分区与连线样式"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "8631081f2e02a7a0cd71cd6ed88fa1702e8af155d9e55a4dd7d856cc98b137d0",
             "path": "skills/arkigo/assets/routing.mjs",
             "symbol": "routeConnection、roundedPath、placeConnectionLabel"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "c13c7db280eaec3e7b446f3f1ee8dd0195fbf04cef51b5e9f23e736519693feb",
             "path": "skills/arkigo/assets/model.mjs",
             "symbol": "projectRelations"
+          },
+          {
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "ac7fa3c9eec1bc7d3cab72de3165fa9af608b72ded388bdf2ba8057bb4606515",
+            "path": "skills/arkigo/assets/layout.mjs",
+            "symbol": "layoutMap"
           }
         ],
-        "note": "分区边框仅作视觉分组，走线可穿过边框或经过分区外。箭头和半透明标签使用与连线对应的色调，悬停或键盘聚焦标签时，对应连线加粗并显示在其他线前面。 走线优先在卡片与首尾拐点之间留 28 个画布像素，转角圆滑后保留可见的直线段，狭窄通路可以缩短这段距离。",
+        "note": "分区边框仅作视觉分组，走线可穿过边框或经过分区外。箭头和半透明标签使用与连线对应的色调，悬停或键盘聚焦标签时，对应连线加粗并显示在其他线前面。 走线优先在卡片与首尾拐点之间留 28 个画布像素，转角圆滑后保留可见的直线段，狭窄通路可以缩短这段距离。 地图沿用布局引擎默认的 1280px 排版宽度。窄屏可在画布空白处滑动查看，缩放和已保存的卡片位置可继续使用。",
         "status": "implemented"
       }
     },
@@ -3333,7 +3366,7 @@
           "顶栏路径与项目名合并，点击上级返回，点击当前层打开其详情。",
           "查找面板搜索 ID、标题、摘要、正文、说明和依据，显示归属路径并可跳转。空查询时展示归属树及清单入口。 归属树省略「已接受」标记。",
           "换页保留对象定位，地址可分享，流程步骤也可定位。",
-          "宽度不超过 760px 时地图和流程竖排，详情占满屏幕。主题默认跟随系统，手动设置保存在浏览器。"
+          "地图和流程保持横向排版，窗口变化只调整可见范围，用户可平移画布浏览。宽度不超过 760px 时详情占满屏幕。主题默认跟随系统，手动设置保存在浏览器。"
         ],
         "purpose": "按词、归属、内容或链接找到同一对象。",
         "route": "#/<读法>/<对象ID>",
@@ -3380,36 +3413,46 @@
           "kind": "file",
           "ref": "skills/arkigo/assets/page.html",
           "symbol": "顶栏、画布、底栏"
+        },
+        {
+          "kind": "conversation",
+          "ref": "2026-11-24 用户要求窄屏保留原布局，通过滑动预览。"
         }
       ],
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f0278231cdfd1ed0ed975778cc97d7862229b14188b27fbf0315bf2892c8050e",
             "path": "skills/arkigo/assets/app.js",
             "symbol": "drawNavigation, navigate, select"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "b6c0e6697ea0a4f62b6e852a4d7a8e9573210492bee905d766647257ea90084e",
             "path": "skills/arkigo/assets/directory.js",
             "symbol": "createDirectory"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "bf79ffc877bf003c20101e9f8060846d18a4f8958931a68f568e212b69d9f510",
             "path": "skills/arkigo/assets/page.html",
             "symbol": "顶栏、画布、底栏"
           },
           {
-            "checkedAt": "2026-11-21T08:59:32.639Z",
-            "hash": "e3ea293e58d2e8badca5042356b8dbf8dc0a04f17129cc010401fcd234009357",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "0d3827bb1a73112ef3c0e31f622642373520bca9342aae08a6fd9c81accb26b3",
             "path": "skills/arkigo/assets/page.css",
             "symbol": "画布选取、焦点和导航样式"
+          },
+          {
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "b346df01abd277b235fc31f75212dfdbe6bc67063f27452a1d9eb41f54821759",
+            "path": "skills/arkigo/assets/camera.js",
+            "symbol": "createCamera、resize"
           }
         ],
-        "note": "顶栏仅显示路径、查找和主题。查找的归属树和详情省略已接受标记，其他设计状态仍显示。版本保留在页面数据中。",
+        "note": "顶栏仅显示路径、查找和主题。查找的归属树和详情省略已接受标记，其他设计状态仍显示。版本保留在页面数据中。 窗口大小变化时，画布保留当前缩放与视图中心。",
         "status": "implemented"
       }
     },
@@ -3456,19 +3499,19 @@
       "implementation": {
         "evidence": [
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "03e9616fd419981004f027119b72b42bf6bd2a2636a2949b49787ef0e4e72eb7",
             "path": "skills/arkigo/scripts/page.mjs",
             "symbol": "buildPage、inertJson"
           },
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
-            "hash": "ca301d989ffcf45db9f28daf6b8a53d57a277d0e28ee9be2fa74b04fce1bfcf3",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
+            "hash": "f0278231cdfd1ed0ed975778cc97d7862229b14188b27fbf0315bf2892c8050e",
             "path": "skills/arkigo/assets/app.js",
             "symbol": "render、navigate、initialize"
           },
           {
-            "checkedAt": "2026-11-21T08:51:23.472Z",
+            "checkedAt": "2026-11-24T05:19:47.462Z",
             "hash": "5936aae3f94a564bd16b374bf73e827134e31a0b325ce3d72192db51a9a723b6",
             "path": "skills/arkigo/scripts/lib/render-page.mjs",
             "symbol": "renderPage"
@@ -3561,7 +3604,8 @@
           "在有足够空间的绕行中，首尾转角与卡片保持间距。",
           "顶栏省略设计版本号，查找的归属树和对象详情省略「已接受」标记。",
           "详情开合时画布的视口尺寸、位置和缩放保持稳定；详情支持滚动及减少动态效果。",
-          "模块详情展示作用及合并去重后的关联文件，可以复制文件路径，通过标题旁的箭头进入模块。"
+          "模块详情展示作用及合并去重后的关联文件，可以复制文件路径，通过标题旁的箭头进入模块。",
+          "缩窄窗口时地图和流程保留卡片位置、排列方向及当前缩放，可平移查看屏幕外的内容。窄屏清单保留表头和列布局，支持横向滚动。"
         ],
         "when": "运行 npm run test:page、npm run test:browser 和 npm run test:e2e"
       },
@@ -3585,10 +3629,14 @@
         {
           "kind": "file",
           "ref": "skills/arkigo/tests/page/page.test.mjs"
+        },
+        {
+          "kind": "conversation",
+          "ref": "2026-11-24 用户要求窄屏保留原布局，通过滑动预览。"
         }
       ],
       "verification": {
-        "checkedAt": "2026-11-21T10:21:32.014Z",
+        "checkedAt": "2026-11-24T05:19:47.462Z",
         "evidence": [
           {
             "kind": "file",
@@ -3607,7 +3655,7 @@
             "ref": "skills/arkigo/tests/e2e/workflow.test.mjs"
           }
         ],
-        "note": "发布前重新运行 npm test，162 项通过，其中 38 项浏览器用例覆盖 Chromium 和 WebKit。上一轮也用 Chromium 离线打开归藏路线图，验证了两块模块详情、路径去重与复制、标题箭头进入模块。",
+        "note": "在 skills/arkigo/ 运行 npm test，162 项全部通过，含 Chromium 和 WebKit 的 38 项浏览器用例。验证地图和流程缩窄时的卡片坐标及缩放、触摸平移、清单横向滚动及详情操作。另用 Chromium 在 320px 模拟触屏中验证清单水平滑动和调整窗口后保留筛选。",
         "status": "passed"
       }
     },

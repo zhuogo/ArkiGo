@@ -21,7 +21,7 @@ registerRead('flow', {
       showSceneEmpty(list.children.length ? '选择流程' : '暂无流程', list.children.length ? list : null);
       return null;
     }
-    const plan = layoutFlow(flow.body, { direction: ctx.direction, availableWidth: ctx.availableWidth });
+    const plan = layoutFlow(flow.body);
     const records = new Map();
     const annotations = new Map();
     for (const step of flow.body.steps) {

@@ -9,7 +9,7 @@ const textNode = (value) => document.createTextNode(value);
 const announce = (message) => { byId('live').textContent = message; };
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const narrowScreen = matchMedia('(max-width: 760px)');
-const largeTargets = matchMedia('(pointer: coarse), (max-width: 640px)');
+const largeTargets = matchMedia('(pointer: coarse)');
 
 function button(label, callback, className = 'tool') {
   const element = make('button', className, label);

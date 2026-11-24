@@ -4,7 +4,7 @@ import { after, before, test } from 'node:test';
 import { overlaps } from '../../assets/layout.mjs';
 import { clinicInput, pageInput } from '../page/fixtures.mjs';
 import { createBoundaries, createDense } from '../page/generate.mjs';
-import { card, engines, mobile, openPage, state, waitForView, writePage } from './helpers.mjs';
+import { card, desktop, engines, mobile, openPage, state, waitForView, writePage } from './helpers.mjs';
 
 const browsers = new Map();
 const selected = process.env.ARKIGO_BROWSERS?.split(',') ?? Object.keys(engines);
@@ -388,25 +388,39 @@ for (const name of selected) {
     assert.deepEqual((await state(page)).layout.views, {});
   });
 
-  test(`${name}: vertical layout, readable titles and full-screen detail at 390 × 844`, async (t) => {
-    const { page } = await open(t, '', { viewport: mobile, hasTouch: true });
-    const initial = await state(page);
-    assert.equal(initial.direction, 'vertical');
+  test(`${name}: narrow canvas keeps its layout and scale, with readable titles and full-screen detail`, async (t) => {
+    const { page } = await open(t, '', { hasTouch: true });
+    for (const [mode, id] of [['map', 'clinic'], ['flow', 'make-booking']]) {
+      await page.setViewportSize(desktop);
+      await page.goto(clinicUrl + '#/' + mode + '/' + id);
+      await waitForView(page, id, { mode });
+      const wide = await state(page);
+      await page.setViewportSize(mobile);
+      const narrow = await state(page);
+      assert.equal(narrow.direction, 'horizontal');
+      assert.deepEqual(narrow.cards, wide.cards);
+      assert.deepEqual(narrow.zones, wide.zones);
+      assert.equal(narrow.camera.k, wide.camera.k);
+      assert.ok(narrow.cards.some(({ x }) => x > narrow.cards[0].x));
+      await page.locator('#viewport').press('ArrowRight');
+      const panned = await state(page);
+      assert.ok(panned.camera.x < narrow.camera.x);
+      assert.deepEqual(panned.cards, narrow.cards);
+    }
+    await page.goto(clinicUrl);
+    await waitForView(page, 'clinic', { mode: 'map' });
     assert.ok(await page.locator('#crumbs').isVisible());
     const titleSize = await page.locator('#world .card-title').first().evaluate((el) =>
       parseFloat(getComputedStyle(el).fontSize));
-    assert.ok(titleSize * initial.camera.k >= 12);
-    assert.ok(initial.cards.every((item) => item.x === initial.cards[0].x));
+    assert.ok(titleSize * (await state(page)).camera.k >= 12);
     await page.locator('#view-detail').tap();
     await page.waitForFunction(() => !document.querySelector('#detail').getAnimations().length);
     assert.deepEqual(await page.locator('#detail').boundingBox(), { x: 0, y: 0, ...mobile });
     assert.ok(await page.locator('#reading').evaluate((el) => el.inert));
     await page.locator('#detail').getByRole('button', { name: '关闭详情' }).tap();
-    await page.goto(clinicUrl + '#/flow/make-booking');
-    await waitForView(page, 'make-booking', { direction: 'vertical' });
-    const flow = await state(page);
-    assert.ok(flow.cards.every((item) => item.x === flow.cards[0].x));
-    assert.ok(titleSize * flow.camera.k >= 12);
+    const beforeFit = (await state(page)).camera.k;
+    await page.locator('#fit').tap();
+    assert.ok((await state(page)).camera.k < beforeFit);
   });
 
   test(`${name}: touch targets are at least 44 × 44 and do not overlap`, async (t) => {
@@ -424,13 +438,14 @@ for (const name of selected) {
         return label.getBoundingClientRect().height >= 44;
       });
       await check(map, 'zoomed map');
-      await page.locator('#fit').tap();
       const edge = page.locator('button.edge-label').first();
       const canvas = await page.locator('#viewport').boundingBox();
       for (let i = 0; i < 30; i++) {
         const box = await edge.boundingBox();
         if (within(box, canvas)) break;
-        await page.locator('#viewport').press(box.y > canvas.y ? 'ArrowDown' : 'ArrowUp');
+        const key = box.x < canvas.x ? 'ArrowLeft' : box.x + box.width > canvas.x + canvas.width ? 'ArrowRight'
+          : box.y < canvas.y ? 'ArrowUp' : 'ArrowDown';
+        await page.locator('#viewport').press(key);
       }
       await check(map, 'panned map');
       await edge.tap();
@@ -533,7 +548,7 @@ for (const name of selected) {
     assert.deepEqual(errors, []);
   });
 
-  test('chromium: real touch input drags a card and spreads two touch points', async (t) => {
+  test('chromium: touch input drags a card, pans sideways and spreads two touch points', async (t) => {
     const { page, context } = await open(t, '', { viewport: mobile, hasTouch: true, isMobile: true });
     const session = await context.newCDPSession(page);
     const touch = (type, touchPoints) => session.send('Input.dispatchTouchEvent', { type, touchPoints });
@@ -547,8 +562,16 @@ for (const name of selected) {
     await touch('touchEnd', []);
     const dragged = await state(page);
     assert.ok(dragged.layout.views.clinic[first.id].y > first.y);
-    await touch('touchStart', [{ x: 60, y: 430, id: 1 }, { x: 150, y: 430, id: 2 }]);
-    await touch('touchMove', [{ x: 36, y: 430, id: 1 }, { x: 200, y: 430, id: 2 }]);
+    const canvas = await page.locator('#viewport').boundingBox();
+    const panY = Math.ceil(canvas.y + 8);
+    await touch('touchStart', [{ x: 200, y: panY, id: 1 }]);
+    await touch('touchMove', [{ x: 76, y: panY, id: 1 }]);
+    await touch('touchEnd', []);
+    const panned = await state(page);
+    assert.equal(panned.camera.x, dragged.camera.x - 124);
+    assert.deepEqual(panned.layout, dragged.layout);
+    await touch('touchStart', [{ x: 60, y: panY, id: 1 }, { x: 150, y: panY, id: 2 }]);
+    await touch('touchMove', [{ x: 36, y: panY, id: 1 }, { x: 200, y: panY, id: 2 }]);
     await touch('touchEnd', []);
     assert.ok((await state(page)).camera.k > dragged.camera.k * 1.4);
   });

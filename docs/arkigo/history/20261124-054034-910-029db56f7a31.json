@@ -1,0 +1,64 @@
+{
+  "format": "arkigo-change/1",
+  "at": "2026-11-24T05:40:34.910Z",
+  "by": "codex",
+  "reason": "核对 version 命令读取 2.1.1 包版本的代码依据",
+  "base": "8c6e403b3e4f",
+  "result": "029db56f7a31",
+  "changes": [
+    {
+      "op": "update",
+      "id": "practice.version",
+      "fields": [
+        "implementation.evidence"
+      ],
+      "before": {
+        "id": "practice.version",
+        "type": "interface",
+        "title": "version 检查运行准备",
+        "summary": "显示技能和 Node 版本、Ajv 是否可用与命令清单。",
+        "parent": "practice",
+        "status": "accepted",
+        "origin": "code",
+        "body": {
+          "kind": "cli",
+          "signature": "version"
+        },
+        "sources": [
+          {
+            "kind": "doc",
+            "ref": "ArkiGo 2.0 升级总纲",
+            "symbol": "第 2、7 节"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/scripts/commands/version.mjs",
+            "symbol": "version"
+          },
+          {
+            "kind": "file",
+            "ref": "skills/arkigo/package.json",
+            "symbol": "version、engines、dependencies"
+          }
+        ],
+        "implementation": {
+          "evidence": [
+            {
+              "checkedAt": "2026-11-21T10:21:32.014Z",
+              "hash": "fe6ffea43ddc1c64d1396e4070cee2b923f1744b02ecf5b62b380bca708a220f",
+              "path": "skills/arkigo/scripts/commands/version.mjs",
+              "symbol": "version"
+            },
+            {
+              "checkedAt": "2026-11-21T10:21:32.014Z",
+              "hash": "7f03e3e994cfea1e990937fa2b973bc5344c51bbf85ad3844238e4ed4d0c5ebf",
+              "path": "skills/arkigo/package.json",
+              "symbol": "version、engines、dependencies"
+            }
+          ],
+          "status": "implemented"
+        }
+      }
+    }
+  ]
+}

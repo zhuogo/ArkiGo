@@ -62,10 +62,17 @@ for (const name of names) {
     assert.equal(await page.locator('.inventory-table').count(), 6);
   });
 
-  test(`${name}: catalog fits a touch screen`, async (t) => {
+  test(`${name}: narrow catalog retains table columns and scrolls sideways`, async (t) => {
     const { page } = await openReading(t, name, 'inventory', { viewport: mobile, hasTouch: true });
     assert.equal(await page.locator('.inventory-page').evaluate((element) =>
       element.scrollWidth <= element.clientWidth), true);
+    const table = page.locator('.inventory-table').first();
+    assert.equal(await table.locator('thead').evaluate((head) => getComputedStyle(head).display), 'table-header-group');
+    const results = page.getByRole('region', { name: '清单结果' });
+    assert.ok(await results.evaluate((el) => el.scrollWidth > el.clientWidth));
+    await results.press('ArrowRight');
+    await page.waitForFunction(() => document.querySelector('.inventory-results').scrollLeft > 0);
+    await results.evaluate((el) => { el.scrollLeft = 0; });
     await page.locator('.inventory-table tbody tr button').first().tap();
     assert.ok(await page.locator('#detail').isVisible());
   });

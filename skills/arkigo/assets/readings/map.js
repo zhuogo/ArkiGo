@@ -19,9 +19,7 @@ registerRead('map', {
     }
     const records = new Map(cards.map((card) => [card.id, card]));
     const projected = projectRelations(ctx.index, ctx.design.relations, container.id, new Set(records.keys()));
-    const plan = layoutMap(cards, projected.edges, {
-      direction: ctx.direction, availableWidth: ctx.availableWidth, positions: ctx.positions(container.id)
-    });
+    const plan = layoutMap(cards, projected.edges, { positions: ctx.positions(container.id) });
     const scene = renderGraph(ctx, plan, records, projected.annotations, true);
     if (plan.edges.some((edge) => !edge.main)) scene.hint = '只画主要关系，选中卡片看它的全部关系';
     scene.related = (address) => new Set(ctx.design.relations

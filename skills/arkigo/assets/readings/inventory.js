@@ -44,10 +44,8 @@ function inventoryTable(ctx, type, rows) {
     first.append(action);
     const values = [...inventoryColumns[type].map(([, value]) => value(object)),
       module?.title, statuses[object.status]];
-    for (const [i, value] of values.entries()) {
-      const cell = row.insertCell();
-      cell.append(make('span', 'inventory-cell-label', columns[i + 1][0]));
-      cell.append(rich(make('span'), String(value ?? '—'), ctx));
+    for (const value of values) {
+      row.insertCell().append(rich(make('span'), String(value ?? '—'), ctx));
     }
     row.addEventListener('click', (event) => { if (!event.target.closest('a, button')) action.click(); });
   }
@@ -66,6 +64,9 @@ registerRead('inventory', {
       module: filterSelect('所属模块', [['@root', '项目直属'], ...modules.map(({ id, title }) => [id, title])])
     };
     const results = make('div', 'inventory-results');
+    results.tabIndex = 0;
+    results.setAttribute('role', 'region');
+    results.setAttribute('aria-label', '清单结果');
     const count = make('output', 'muted');
     count.setAttribute('aria-live', 'polite');
     const entries = Object.entries(filters);

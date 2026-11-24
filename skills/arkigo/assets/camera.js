@@ -6,6 +6,7 @@ function createCamera(ctx) {
   const world = byId('world');
   const touches = new Map();
   const dimensions = () => ({ width: viewport.clientWidth, height: viewport.clientHeight });
+  let size = dimensions();
   let value = { x: 0, y: 0, k: 1 };
   let home = 1;
   let scene = null;
@@ -42,14 +43,13 @@ function createCamera(ctx) {
     const { width, height } = dimensions();
     const box = scene?.bounds;
     if (!box?.width) return { x: 0, y: 0, k: 1 };
-    const vertical = scene.direction === 'vertical';
-    const pad = vertical ? 18 : 28;
+    const pad = 28;
     const ratio = Math.min((width - 2 * pad) / box.width, (height - 2 * pad) / box.height, 1);
-    const k = vertical ? 1 : clamp(ratio, readable ? .7 : .14, 1);
+    const k = clamp(ratio, readable ? .75 : .14, 1);
     return {
       k,
       x: Math.max(pad, (width - box.width * k) / 2) - box.x * k,
-      y: (vertical ? 15 : Math.max(pad, (height - box.height * k) / 2)) - box.y * k
+      y: Math.max(pad, (height - box.height * k) / 2) - box.y * k
     };
   }
 
@@ -58,12 +58,21 @@ function createCamera(ctx) {
     edgeScale = 1;
     const initial = fit(true);
     home = initial.k;
-    const size = dimensions();
+    size = dimensions();
     value = previous ? {
       k: previous.k, x: previous.x + (size.width - previous.width) / 2,
       y: previous.y + (size.height - previous.height) / 2
     } : initial;
     apply();
+  }
+
+  function resize() {
+    const next = dimensions();
+    if (next.width === size.width && next.height === size.height) return;
+    value.x += (next.width - size.width) / 2;
+    value.y += (next.height - size.height) / 2;
+    size = next;
+    if (scene) apply();
   }
 
   function reveal(card, centered = false) {
@@ -170,6 +179,7 @@ function createCamera(ctx) {
       scene?.drawEdges(value.k);
     });
   }
+  largeTargets.addEventListener('change', requestEdges);
 
   function abortGesture() {
     if (gesture?.card) {
@@ -243,7 +253,6 @@ function createCamera(ctx) {
       const { card, element } = gesture;
       card.x = Math.round(gesture.x + dx / value.k);
       card.y = Math.round(gesture.y + dy / value.k);
-      if (scene.direction === 'vertical') card.x = clamp(card.x, 0, Math.max(0, ctx.availableWidth - card.width - 16));
       cssBox(element, card);
       element.classList.add('dragging');
       requestEdges();
@@ -315,7 +324,7 @@ function createCamera(ctx) {
     event.preventDefault();
   });
   return {
-    setScene, save, reveal, revealFocusedCard, focusWithoutMoving, snapshot, animateLevel, stopTransition, reset, zoom,
+    setScene, resize, save, reveal, revealFocusedCard, focusWithoutMoving, snapshot, animateLevel, stopTransition, reset, zoom,
     transitioning: () => Boolean(cancelTransition),
     consumeClick: (event) => event.detail > 0 && performance.now() < suppressed,
     abortGesture

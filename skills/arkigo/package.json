@@ -1,6 +1,6 @@
 {
   "name": "arkigo",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "A local skill for maintaining one living project design with AI and reviewing it offline.",
   "license": "MIT",

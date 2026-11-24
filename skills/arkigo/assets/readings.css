@@ -1,6 +1,6 @@
 body:not([data-reading="map"], [data-reading="flow"]) #viewport {
   background: var(--paper);
-  touch-action: pan-y;
+  touch-action: auto;
 }
 #reading { --reading-inset: 30px; }
 .reading-page {
@@ -49,25 +49,16 @@ body:not([data-reading="map"], [data-reading="flow"]) #viewport {
 .reading-link[aria-current] { background: var(--accent-bg); }
 .inventory-section { padding-block: 12px 18px; border-top: 1px solid var(--line); }
 .inventory-section h2 { margin-bottom: 8px; }
-.inventory-table { background: var(--surface); table-layout: fixed; }
+.inventory-results { overflow-x: auto; }
+.inventory-results:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.inventory-table { min-width: 720px; background: var(--surface); table-layout: fixed; }
 .inventory-table th:first-child { width: 22%; }
 .inventory-table th:last-child { width: 14%; }
 .inventory-table :is(th, td) { vertical-align: middle; }
 .inventory-table td:first-child { font-weight: 650; padding: 0 4px; }
 .inventory-table tbody tr { cursor: pointer; }
 .inventory-table tbody tr:hover { background: var(--accent-bg); }
-.inventory-cell-label { display: none; }
 @media (max-width: 760px) {
-  #reading { --reading-inset: 14px; }
-  .reading-page { padding-bottom: 24px; }
-  .reading-toolbar .reading-field { flex: 1 1 120px; }
-  .reading-toolbar .reading-field select { width: 100%; }
-  .inventory-table, .inventory-table tbody, .inventory-table tr, .inventory-table td { display: block; }
-  .inventory-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .inventory-table tbody tr { display: grid; gap: 2px; border-top: 1px solid var(--line); padding: 3px 6px 8px; }
-  .inventory-table td { border: 0; padding: 1px 5px; }
-  .inventory-table td:not(:first-child) { display: grid; grid-template-columns: minmax(64px, 23%) 1fr; gap: 6px; }
-  .inventory-cell-label { display: inline; color: var(--muted); }
   .reading-page .tool, .reading-field select { min-width: 44px; min-height: 44px; }
   .reading-field select { font-size: 16px; }
 }

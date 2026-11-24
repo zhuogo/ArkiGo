@@ -46,8 +46,6 @@ function canEnter(address) {
 const ctx = {
   ...input, index, positions, modeFor, canEnter,
   get viewId() { return state.viewId; },
-  get direction() { return narrowScreen.matches ? 'vertical' : 'horizontal'; },
-  get availableWidth() { return Math.max(1, byId('viewport').clientWidth - 36); },
   selection: () => state?.selected,
   select, enter, back, move, jump,
   navigate: (mode, address, intent = 'switch') => navigate(mode, address, intent)
@@ -331,28 +329,17 @@ function initialize() {
   });
   window.addEventListener('popstate', restoreLocation);
   window.addEventListener('hashchange', restoreLocation);
-  narrowScreen.addEventListener('change', () => {
-    ctx.camera.stopTransition();
-    render();
-  });
-  largeTargets.addEventListener('change', () => render(ctx.camera.save()));
+  narrowScreen.addEventListener('change', () => paintDetail());
   reducedMotion.addEventListener('change', () => ctx.camera.stopTransition());
   state = locationState();
   render(state.camera);
   saveHistory();
-  let lastWidth = window.innerWidth;
-  let lastHeight = window.innerHeight;
-  window.addEventListener('resize', () => {
-    if (lastWidth === window.innerWidth && lastHeight === window.innerHeight) return;
-    lastWidth = window.innerWidth;
-    lastHeight = window.innerHeight;
-    render();
-  });
+  window.addEventListener('resize', ctx.camera.resize);
   window.arkigoCanvas = Object.freeze({
     getState: () => structuredClone({
       mode: state.mode, address: state.address, viewId: state.viewId, selected: state.selected, detail: state.detail,
       path: index.pathTo(state.viewId).map((object) => object.id), camera: ctx.camera.save(),
-      direction: ctx.direction, transitioning: ctx.camera.transitioning(), panel: ctx.directory.active(),
+      direction: scene?.direction ?? 'horizontal', transitioning: ctx.camera.transitioning(), panel: ctx.directory.active(),
       layout: exportData(), cards: scene?.cards ?? [], zones: scene?.zones ?? []
     })
   });

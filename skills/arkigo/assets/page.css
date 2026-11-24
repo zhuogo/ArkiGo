@@ -407,7 +407,7 @@ figcaption { margin-top: 5px; color: var(--muted); font-size: 12px; }
 .tree-object { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .tree-row .type-mark { width: 23px; height: 23px; }
 
-#view-content { height: 100%; overflow: auto; touch-action: pan-y; }
+#view-content { height: 100%; overflow: auto; }
 .empty-scene {
   min-height: 100%;
   display: grid;
